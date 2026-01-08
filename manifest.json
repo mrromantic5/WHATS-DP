@@ -1,0 +1,111 @@
+{
+  "name": "WhatsDP Downloader",
+  "short_name": "WhatsDP",
+  "description": "Premium WhatsApp Profile Picture Downloader - Fetch, preview, and download WhatsApp DPs securely",
+  "version": "1.1.0",
+  "manifest_version": 3,
+  "author": "TECH LYFE TEAM",
+  "theme_color": "#25D366",
+  "background_color": "#111B21",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "utilities",
+    "productivity",
+    "photo"
+  ],
+  "shortcuts": [
+    {
+      "name": "Fetch New DP",
+      "short_name": "New",
+      "description": "Fetch a new WhatsApp profile picture",
+      "url": "/",
+      "icons": [
+        {
+          "src": "icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "View History",
+      "short_name": "History",
+      "description": "View previously fetched profile pictures",
+      "url": "/#history"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "WhatsDP Desktop Interface"
+    },
+    {
+      "src": "screenshots/mobile.png",
+      "sizes": "393x852",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "WhatsDP Mobile Interface"
+    }
+  ],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "permissions": [
+    "storage"
+  ]
+}
