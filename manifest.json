@@ -1,16 +1,20 @@
 {
-  "name": "WhatsDP Downloader",
+  "name": "WhatsDP",
   "short_name": "WhatsDP",
-  "description": "Premium WhatsApp Profile Picture Downloader - Fetch, preview, and download WhatsApp DPs securely",
-  "version": "1.1.0",
+  "description": "Premium WhatsApp Profile Picture Downloader",
+  "version": "2.0.0",
   "manifest_version": 3,
   "author": "TECH LYFE TEAM",
   "theme_color": "#25D366",
-  "background_color": "#111B21",
+  "background_color": "#25D366",
   "display": "standalone",
+  "display_override": ["window-controls-overlay"],
   "orientation": "portrait",
   "scope": "/",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
+  "id": "/",
+  "categories": ["utilities", "productivity", "photo"],
+  
   "icons": [
     {
       "src": "icons/icon-72x72.png",
@@ -61,21 +65,33 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": [
-    "utilities",
-    "productivity",
-    "photo"
+  
+  "screenshots": [
+    {
+      "src": "screenshots/desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "screenshots/mobile.png",
+      "sizes": "393x852",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
   ],
+  
   "shortcuts": [
     {
-      "name": "Fetch New DP",
-      "short_name": "New",
+      "name": "Fetch Profile Picture",
+      "short_name": "New DP",
       "description": "Fetch a new WhatsApp profile picture",
-      "url": "/",
+      "url": "/?source=pwa&action=fetch",
       "icons": [
         {
           "src": "icons/icon-96x96.png",
-          "sizes": "96x96"
+          "sizes": "96x96",
+          "type": "image/png"
         }
       ]
     },
@@ -83,29 +99,32 @@
       "name": "View History",
       "short_name": "History",
       "description": "View previously fetched profile pictures",
-      "url": "/#history"
+      "url": "/?source=pwa&action=history"
     }
   ],
-  "screenshots": [
-    {
-      "src": "screenshots/desktop.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "WhatsDP Desktop Interface"
-    },
-    {
-      "src": "screenshots/mobile.png",
-      "sizes": "393x852",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "WhatsDP Mobile Interface"
+  
+  "share_target": {
+    "action": "/",
+    "method": "GET",
+    "params": {
+      "title": "WhatsDP",
+      "text": "Check out this WhatsApp profile picture"
     }
-  ],
-  "edge_side_panel": {
-    "preferred_width": 400
   },
+  
+  "protocol_handlers": [
+    {
+      "protocol": "web+whatsdp",
+      "url": "/?url=%s"
+    }
+  ],
+  
   "permissions": [
-    "storage"
-  ]
+    "storage",
+    "clipboard-write"
+  ],
+  
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  }
 }
