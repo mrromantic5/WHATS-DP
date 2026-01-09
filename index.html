@@ -2,8 +2,8 @@
 <html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsDP Downloader | Premium WhatsApp Profile Picture Downloader</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>WhatsDP | Premium WhatsApp Profile Picture Downloader</title>
     
     <!-- PWA Meta Tags -->
     <meta name="application-name" content="WhatsDP">
@@ -15,26 +15,98 @@
     <meta name="msapplication-TileColor" content="#25D366">
     <meta name="msapplication-config" content="browserconfig.xml">
     
-    <!-- Apple Touch Icons -->
+    <!-- Apple Touch Icons - Using only icons folder -->
     <link rel="apple-touch-icon" href="icons/icon-152x152.png">
     <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180x180.png">
     <link rel="apple-touch-icon" sizes="167x167" href="icons/icon-167x167.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="icons/icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="128x128" href="icons/icon-128x128.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="icons/icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="icons/icon-114x114.png">
     
-    <!-- PWA Splash Screens -->
-    <link rel="apple-touch-startup-image" href="splashscreens/iphone5_splash.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-    <link rel="apple-touch-startup-image" href="splashscreens/iphone6_splash.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-    <link rel="apple-touch-startup-image" href="splashscreens/iphoneplus_splash.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-    <link rel="apple-touch-startup-image" href="splashscreens/iphonex_splash.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-    <link rel="apple-touch-startup-image" href="splashscreens/ipad_splash.png" media="(min-device-width: 768px) and (max-device-width: 1024px) and (-webkit-min-device-pixel-ratio: 2) and (orientation: portrait)">
+    <!-- Favicons for all platforms -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16x16.png">
+    <link rel="shortcut icon" href="icons/favicon.ico">
+    
+    <!-- Splash Screen Simulation using CSS only -->
+    <style>
+        /* Inline splash screen styles */
+        .pwa-splash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #25D366;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        
+        .pwa-splash.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .pwa-splash-icon {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+            animation: splashPulse 1.5s infinite;
+        }
+        
+        .pwa-splash-icon i {
+            font-size: 4rem;
+            color: #25D366;
+        }
+        
+        .pwa-splash-title {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .pwa-splash-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            text-align: center;
+            max-width: 300px;
+        }
+        
+        @keyframes splashPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
     
     <!-- External Resources -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📱</text></svg>">
 </head>
 <body>
+    <!-- PWA Splash Screen (CSS Only) -->
+    <div class="pwa-splash" id="pwaSplash">
+        <div class="pwa-splash-icon">
+            <i class="fab fa-whatsapp"></i>
+        </div>
+        <h1 class="pwa-splash-title">WhatsDP</h1>
+        <p class="pwa-splash-subtitle">Premium WhatsApp Downloader</p>
+    </div>
+
     <!-- Offline Indicator -->
     <div class="offline-indicator hide" id="offlineIndicator">
         <i class="fas fa-wifi-slash"></i>
@@ -662,13 +734,52 @@
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/service-worker.js')
                     .then(registration => {
-                        console.log('ServiceWorker registration successful');
+                        console.log('ServiceWorker registration successful with scope:', registration.scope);
+                        
+                        // Check for updates
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            console.log('New service worker found:', newWorker);
+                            
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // New update available
+                                    if (window.whatsDPApp) {
+                                        window.whatsDPApp.showUpdateAvailable();
+                                    }
+                                }
+                            });
+                        });
                     })
                     .catch(err => {
                         console.log('ServiceWorker registration failed: ', err);
                     });
             });
         }
+        
+        // Handle splash screen
+        document.addEventListener('DOMContentLoaded', () => {
+            const splashScreen = document.getElementById('pwaSplash');
+            
+            // Check if running as standalone PWA
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                                window.navigator.standalone ||
+                                document.referrer.includes('android-app://');
+            
+            // Show splash screen for standalone PWA or first load
+            if (isStandalone || performance.navigation.type === 0) {
+                setTimeout(() => {
+                    splashScreen.classList.add('hidden');
+                }, 1500);
+            } else {
+                splashScreen.classList.add('hidden');
+            }
+            
+            // Initialize app after splash screen
+            setTimeout(() => {
+                window.whatsDPApp = new WhatsDPDownloader();
+            }, 100);
+        });
     </script>
 </body>
-</html>
+                                    </html>
