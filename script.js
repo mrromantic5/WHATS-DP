@@ -72,7 +72,8 @@ class WhatsDPDownloader {
             pwaUpdateLaterBtn: document.getElementById('pwaUpdateLaterBtn'),
             pwaUpdateNowBtn: document.getElementById('pwaUpdateNowBtn'),
             offlineIndicator: document.getElementById('offlineIndicator'),
-            appBadge: document.getElementById('appBadge')
+            appBadge: document.getElementById('appBadge'),
+            pwaSplash: document.getElementById('pwaSplash')
         };
         
         this.state = {
@@ -122,9 +123,7 @@ class WhatsDPDownloader {
         this.pwa = {
             deferredPrompt: null,
             isInstalled: false,
-            isStandalone: window.matchMedia('(display-mode: standalone)').matches ||
-                         window.navigator.standalone ||
-                         document.referrer.includes('android-app://')
+            isStandalone: this.checkIfStandalone()
         };
         
         this.apiEndpoints = [
@@ -154,7 +153,16 @@ class WhatsDPDownloader {
         this.imageCache = new Map();
         this.whatsappChannelUrl = 'https://whatsapp.com/channel/0029VaYvyvZ11ulN0pNKHX1u';
         this.timeUpdateInterval = null;
-        this.init();
+        
+        // Initialize after a short delay to ensure DOM is ready
+        setTimeout(() => this.init(), 100);
+    }
+    
+    checkIfStandalone() {
+        return window.matchMedia('(display-mode: standalone)').matches ||
+               window.navigator.standalone ||
+               document.referrer.includes('android-app://') ||
+               window.location.search.includes('source=pwa');
     }
     
     async init() {
@@ -170,10 +178,20 @@ class WhatsDPDownloader {
         this.renderCountryList();
         this.initFollowPopup();
         this.initPWA();
+        
+        // Hide splash screen after initialization
+        setTimeout(() => {
+            if (this.elements.pwaSplash) {
+                this.elements.pwaSplash.classList.add('hidden');
+            }
+        }, 1500);
     }
     
     // PWA Functionality
     initPWA() {
+        // Check if already installed as PWA
+        this.checkPWAInstallation();
+        
         // Handle beforeinstallprompt event
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
@@ -185,15 +203,22 @@ class WhatsDPDownloader {
                     this.showInstallButton();
                 }, 3000);
             }
+            
+            // Log for debugging
+            console.log('PWA Installation available');
         });
         
         // Check if app is already installed
         window.addEventListener('appinstalled', (evt) => {
-            console.log('App installed successfully');
+            console.log('App installed successfully as PWA');
             this.pwa.isInstalled = true;
+            this.pwa.isStandalone = true;
             this.hideInstallButton();
-            this.showToast('App Installed', 'WhatsDP has been installed successfully!', 'success');
             this.showAppBadge();
+            this.showToast('App Installed', 'WhatsDP has been installed successfully!', 'success');
+            
+            // Track installation
+            this.trackInstallation();
         });
         
         // Monitor online/offline status
@@ -224,6 +249,56 @@ class WhatsDPDownloader {
         }
     }
     
+    checkPWAInstallation() {
+        // Check various methods to detect PWA installation
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            this.pwa.isInstalled = true;
+            this.pwa.isStandalone = true;
+            console.log('Running as standalone PWA');
+            return;
+        }
+        
+        if (window.navigator.standalone) {
+            this.pwa.isInstalled = true;
+            this.pwa.isStandalone = true;
+            console.log('Running as iOS standalone PWA');
+            return;
+        }
+        
+        // Check if launched from home screen
+        if (window.performance && performance.getEntriesByType('navigation').length > 0) {
+            const navEntry = performance.getEntriesByType('navigation')[0];
+            if (navEntry.type === 'navigate' && document.referrer === '') {
+                // Could be launched from home screen
+                this.checkIfLaunchedFromHomeScreen();
+            }
+        }
+    }
+    
+    checkIfLaunchedFromHomeScreen() {
+        // Check for PWA launch indicators
+        if (window.location.search.includes('source=pwa') ||
+            window.location.hash.includes('pwa') ||
+            document.referrer.includes('android-app://')) {
+            this.pwa.isInstalled = true;
+            this.pwa.isStandalone = true;
+        }
+    }
+    
+    trackInstallation() {
+        // Track PWA installation in localStorage
+        localStorage.setItem('whatsdp_pwa_installed', 'true');
+        localStorage.setItem('whatsdp_pwa_install_date', new Date().toISOString());
+        
+        // Send analytics if available
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'pwa_installed', {
+                'event_category': 'engagement',
+                'event_label': 'WhatsDP PWA Installation'
+            });
+        }
+    }
+    
     initPWAUI() {
         // Setup PWA modal events
         this.setupPWAModalEvents();
@@ -233,6 +308,12 @@ class WhatsDPDownloader {
             setTimeout(() => {
                 this.showAppBadge();
             }, 1000);
+        }
+        
+        // Adjust UI for standalone mode
+        if (this.pwa.isStandalone) {
+            document.body.classList.add('pwa-standalone');
+            this.hideInstallButton();
         }
     }
     
@@ -260,15 +341,23 @@ class WhatsDPDownloader {
         });
         
         // Close events
-        guideOverlay?.addEventListener('click', () => this.closePWAInstallGuide());
-        guideCloseBtn?.addEventListener('click', () => this.closePWAInstallGuide());
-        guideCloseBtn2?.addEventListener('click', () => this.closePWAInstallGuide());
-        installFromGuideBtn?.addEventListener('click', () => {
-            this.closePWAInstallGuide();
-            if (this.pwa.deferredPrompt) {
-                this.triggerPWAInstall();
-            }
-        });
+        if (guideOverlay) {
+            guideOverlay.addEventListener('click', () => this.closePWAInstallGuide());
+        }
+        if (guideCloseBtn) {
+            guideCloseBtn.addEventListener('click', () => this.closePWAInstallGuide());
+        }
+        if (guideCloseBtn2) {
+            guideCloseBtn2.addEventListener('click', () => this.closePWAInstallGuide());
+        }
+        if (installFromGuideBtn) {
+            installFromGuideBtn.addEventListener('click', () => {
+                this.closePWAInstallGuide();
+                if (this.pwa.deferredPrompt) {
+                    this.triggerPWAInstall();
+                }
+            });
+        }
         
         // PWA Update Modal
         const updateModal = this.elements.pwaUpdateModal;
@@ -277,31 +366,41 @@ class WhatsDPDownloader {
         const updateLaterBtn = this.elements.pwaUpdateLaterBtn;
         const updateNowBtn = this.elements.pwaUpdateNowBtn;
         
-        updateOverlay?.addEventListener('click', () => this.closePWAUpdateModal());
-        updateCloseBtn?.addEventListener('click', () => this.closePWAUpdateModal());
-        updateLaterBtn?.addEventListener('click', () => this.closePWAUpdateModal());
-        updateNowBtn?.addEventListener('click', () => {
-            if (navigator.serviceWorker.controller) {
-                navigator.serviceWorker.controller.postMessage({ action: 'skipWaiting' });
-                window.location.reload();
-            }
-            this.closePWAUpdateModal();
-        });
+        if (updateOverlay) {
+            updateOverlay.addEventListener('click', () => this.closePWAUpdateModal());
+        }
+        if (updateCloseBtn) {
+            updateCloseBtn.addEventListener('click', () => this.closePWAUpdateModal());
+        }
+        if (updateLaterBtn) {
+            updateLaterBtn.addEventListener('click', () => this.closePWAUpdateModal());
+        }
+        if (updateNowBtn) {
+            updateNowBtn.addEventListener('click', () => {
+                if (navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+                    window.location.reload();
+                }
+                this.closePWAUpdateModal();
+            });
+        }
         
         // PWA Install Button
         const installBtn = this.elements.pwaInstallBtn;
-        installBtn?.addEventListener('click', () => {
-            if (this.pwa.deferredPrompt) {
-                this.triggerPWAInstall();
-            } else {
-                this.openPWAInstallGuide();
-            }
-        });
+        if (installBtn) {
+            installBtn.addEventListener('click', () => {
+                if (this.pwa.deferredPrompt) {
+                    this.triggerPWAInstall();
+                } else {
+                    this.openPWAInstallGuide();
+                }
+            });
+        }
     }
     
     showInstallButton() {
         const installBtn = this.elements.pwaInstallBtn;
-        if (installBtn) {
+        if (installBtn && !this.pwa.isInstalled && !this.pwa.isStandalone) {
             installBtn.classList.remove('hide');
             setTimeout(() => {
                 installBtn.style.opacity = '1';
@@ -319,17 +418,38 @@ class WhatsDPDownloader {
     }
     
     triggerPWAInstall() {
-        if (!this.pwa.deferredPrompt) return;
+        if (!this.pwa.deferredPrompt) {
+            this.openPWAInstallGuide();
+            return;
+        }
+        
+        // Show installing state
+        const installBtn = this.elements.pwaInstallBtn;
+        if (installBtn) {
+            installBtn.classList.add('installing');
+            installBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span class="install-text">Installing...</span>';
+        }
         
         this.pwa.deferredPrompt.prompt();
         
         this.pwa.deferredPrompt.userChoice.then((choiceResult) => {
+            // Reset button state
+            if (installBtn) {
+                installBtn.classList.remove('installing');
+                installBtn.innerHTML = '<i class="fas fa-download"></i><span class="install-text">Install App</span><span class="install-badge">NEW</span>';
+            }
+            
             if (choiceResult.outcome === 'accepted') {
                 console.log('User accepted the install prompt');
                 this.pwa.isInstalled = true;
                 this.hideInstallButton();
+                this.trackInstallation();
             } else {
                 console.log('User dismissed the install prompt');
+                // Show guide modal if user dismissed
+                setTimeout(() => {
+                    this.openPWAInstallGuide();
+                }, 1000);
             }
             this.pwa.deferredPrompt = null;
         });
@@ -383,7 +503,7 @@ class WhatsDPDownloader {
     
     showAppBadge() {
         const badge = this.elements.appBadge;
-        if (badge) {
+        if (badge && this.pwa.isStandalone) {
             badge.classList.remove('hide');
             setTimeout(() => {
                 badge.classList.add('hide');
