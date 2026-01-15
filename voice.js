@@ -78,7 +78,7 @@ class ReadGOPlus {
             isSpeaking: false,
             isPaused: false,
             isRecording: false,
-            speechSynthesis: window.speechSynthesis || null,
+            speechSynthesis: window.speechSynthesis,
             audioContext: null,
             analyser: null,
             source: null,
@@ -118,11 +118,71 @@ class ReadGOPlus {
             playbackStartTime: null,
             playbackTimer: null,
             
-            // Browser support
-            isSpeechSynthesisSupported: !!window.speechSynthesis,
-            isSpeechRecognitionSupported: !!(window.SpeechRecognition || window.webkitSpeechRecognition),
-            isAudioContextSupported: !!(window.AudioContext || window.webkitAudioContext)
+            // Browser support flags
+            isSpeechSynthesisSupported: false,
+            isSpeechRecognitionSupported: false,
+            isAudioContextSupported: false
         };
+        
+        // Pre-defined voices that work in ALL browsers
+        this.predefinedVoices = [
+            {
+                name: 'English (US) - Female',
+                lang: 'en-US',
+                category: 'female',
+                gender: 'female',
+                default: true,
+                localService: true
+            },
+            {
+                name: 'English (US) - Male',
+                lang: 'en-US',
+                category: 'male',
+                gender: 'male',
+                default: false,
+                localService: true
+            },
+            {
+                name: 'English (UK) - Female',
+                lang: 'en-GB',
+                category: 'female',
+                gender: 'female',
+                default: false,
+                localService: true
+            },
+            {
+                name: 'English (UK) - Male',
+                lang: 'en-GB',
+                category: 'male',
+                gender: 'male',
+                default: false,
+                localService: true
+            },
+            {
+                name: 'Friendly Assistant',
+                lang: 'en-US',
+                category: 'friendly',
+                gender: 'female',
+                default: false,
+                localService: true
+            },
+            {
+                name: 'Deep Voice',
+                lang: 'en-US',
+                category: 'deep',
+                gender: 'male',
+                default: false,
+                localService: true
+            },
+            {
+                name: 'AI Assistant',
+                lang: 'en-US',
+                category: 'ai',
+                gender: 'neutral',
+                default: false,
+                localService: true
+            }
+        ];
         
         this.voiceCategories = [
             { id: 'all', name: 'All Voices', icon: 'fas fa-globe' },
@@ -130,115 +190,127 @@ class ReadGOPlus {
             { id: 'female', name: 'Female', icon: 'fas fa-female' },
             { id: 'friendly', name: 'Friendly', icon: 'fas fa-smile' },
             { id: 'deep', name: 'Deep', icon: 'fas fa-volume-up' },
-            { id: 'ai', name: 'AI-style', icon: 'fas fa-robot' }
-        ];
-        
-        // Pre-defined fallback voices for browsers with limited support
-        this.fallbackVoices = [
-            { name: 'English (US) - Male', lang: 'en-US', category: 'male', gender: 'male' },
-            { name: 'English (US) - Female', lang: 'en-US', category: 'female', gender: 'female' },
-            { name: 'English (UK) - Male', lang: 'en-GB', category: 'male', gender: 'male' },
-            { name: 'English (UK) - Female', lang: 'en-GB', category: 'female', gender: 'female' },
-            { name: 'Friendly Assistant', lang: 'en-US', category: 'friendly', gender: 'female' },
-            { name: 'Deep Voice', lang: 'en-US', category: 'deep', gender: 'male' },
-            { name: 'AI Assistant', lang: 'en-US', category: 'ai', gender: 'neutral' }
+            { id: 'ai', name: 'AI', icon: 'fas fa-robot' }
         ];
         
         this.init();
     }
     
-    async init() {
+    init() {
+        this.checkBrowserSupport();
         this.setupEventListeners();
+        this.loadVoicesImmediately();
         this.setupAudioContext();
         this.setupSpeechRecognition();
         this.renderHistory();
         this.updateStatsDisplay();
         this.setupVisualizers();
         this.updateTTSCharCounter();
-        
-        // Initialize voices
-        this.initializeVoices();
-        
-        // Check browser compatibility
-        this.checkBrowserCompatibility();
-        
-        // Initialize tab indicator position
-        setTimeout(() => this.updateTabIndicator(), 100);
-        
-        // Auto-select first voice
-        setTimeout(() => {
-            if (!this.state.selectedVoice && this.state.voices.length > 0) {
-                this.selectVoice(this.state.voices[0]);
-            }
-        }, 500);
+        this.updateTabIndicator();
     }
     
-    initializeVoices() {
-        if (this.state.isSpeechSynthesisSupported) {
-            this.loadBrowserVoices();
+    checkBrowserSupport() {
+        // Check Speech Synthesis support
+        this.state.isSpeechSynthesisSupported = !!(window.speechSynthesis);
+        
+        // Check Speech Recognition support
+        this.state.isSpeechRecognitionSupported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+        
+        // Check Audio Context support
+        this.state.isAudioContextSupported = !!(window.AudioContext || window.webkitAudioContext);
+        
+        console.log('Browser Support:', {
+            speechSynthesis: this.state.isSpeechSynthesisSupported,
+            speechRecognition: this.state.isSpeechRecognitionSupported,
+            audioContext: this.state.isAudioContextSupported
+        });
+    }
+    
+    loadVoicesImmediately() {
+        if (!this.state.isSpeechSynthesisSupported) {
+            console.warn('Speech Synthesis not supported, using predefined voices');
+            this.usePredefinedVoices();
+            return;
+        }
+        
+        // Try to get voices immediately
+        const voices = speechSynthesis.getVoices();
+        
+        if (voices && voices.length > 0) {
+            console.log('Voices loaded immediately:', voices.length);
+            this.processBrowserVoices(voices);
         } else {
-            this.useFallbackVoices();
-        }
-    }
-    
-    loadBrowserVoices() {
-        const loadVoices = () => {
-            const browserVoices = this.speechSynthesis.getVoices();
+            console.log('No voices available immediately, using predefined voices');
+            this.usePredefinedVoices();
             
-            if (browserVoices.length > 0) {
-                this.state.voices = browserVoices.map(voice => ({
-                    ...voice,
-                    category: this.categorizeVoice(voice),
-                    isFavorite: false,
-                    lastUsed: null
-                }));
-                
-                this.populateVoices();
-                
-                // Auto-select first English voice if available
-                const englishVoice = this.state.voices.find(v => 
-                    v.lang.startsWith('en-') || v.lang === 'en'
-                ) || this.state.voices[0];
-                
-                if (englishVoice) {
-                    this.selectVoice(englishVoice);
+            // Try again after a delay
+            setTimeout(() => {
+                const delayedVoices = speechSynthesis.getVoices();
+                if (delayedVoices && delayedVoices.length > 0) {
+                    console.log('Voices loaded after delay:', delayedVoices.length);
+                    this.processBrowserVoices(delayedVoices);
                 }
-            } else {
-                // If no browser voices, use fallback
-                setTimeout(() => {
-                    if (this.state.voices.length === 0) {
-                        this.useFallbackVoices();
-                    }
-                }, 1000);
-            }
-        };
-        
-        // Load voices immediately if available
-        loadVoices();
-        
-        // Set up voices changed listener
-        if (this.speechSynthesis) {
-            this.speechSynthesis.onvoiceschanged = loadVoices;
+            }, 1000);
+            
+            // Setup voices changed listener
+            speechSynthesis.onvoiceschanged = () => {
+                const changedVoices = speechSynthesis.getVoices();
+                if (changedVoices && changedVoices.length > 0) {
+                    console.log('Voices changed:', changedVoices.length);
+                    this.processBrowserVoices(changedVoices);
+                }
+            };
         }
     }
     
-    useFallbackVoices() {
-        this.state.voices = this.fallbackVoices.map(voice => ({
+    processBrowserVoices(browserVoices) {
+        if (!browserVoices || browserVoices.length === 0) return;
+        
+        // Map browser voices to our format
+        const mappedVoices = browserVoices.map(voice => ({
             name: voice.name,
             lang: voice.lang,
-            category: voice.category,
-            gender: voice.gender,
-            isFallback: true,
-            isFavorite: false,
-            lastUsed: null
+            category: this.categorizeVoice(voice),
+            gender: this.detectGender(voice),
+            default: voice.default || false,
+            localService: voice.localService || false,
+            voiceObject: voice,
+            isBrowserVoice: true
         }));
         
-        this.populateVoices();
+        // Filter for English voices first, then add others
+        const englishVoices = mappedVoices.filter(v => 
+            v.lang.startsWith('en-') || v.lang === 'en'
+        );
+        
+        const otherVoices = mappedVoices.filter(v => 
+            !v.lang.startsWith('en-') && v.lang !== 'en'
+        );
+        
+        this.state.voices = [...englishVoices, ...otherVoices];
         
         // Auto-select first voice
-        if (this.state.voices.length > 0) {
+        if (this.state.voices.length > 0 && !this.state.selectedVoice) {
             this.selectVoice(this.state.voices[0]);
         }
+        
+        this.populateVoices();
+    }
+    
+    usePredefinedVoices() {
+        console.log('Using predefined voices');
+        this.state.voices = this.predefinedVoices.map(voice => ({
+            ...voice,
+            isBrowserVoice: false,
+            voiceObject: null
+        }));
+        
+        // Auto-select first voice
+        if (this.state.voices.length > 0 && !this.state.selectedVoice) {
+            this.selectVoice(this.state.voices[0]);
+        }
+        
+        this.populateVoices();
     }
     
     categorizeVoice(voice) {
@@ -261,94 +333,101 @@ class ReadGOPlus {
         return 'other';
     }
     
-    checkBrowserCompatibility() {
-        const warnings = [];
-        
-        if (!this.state.isSpeechSynthesisSupported) {
-            warnings.push('Text-to-Speech is not fully supported in this browser. Using fallback voices.');
+    detectGender(voice) {
+        const name = voice.name.toLowerCase();
+        if (name.includes('female') || name.includes('woman') || name.includes('susan') || name.includes('kate') || name.includes('mary')) {
+            return 'female';
+        } else if (name.includes('male') || name.includes('man') || name.includes('mike') || name.includes('david') || name.includes('john')) {
+            return 'male';
         }
-        
-        if (!this.state.isSpeechRecognitionSupported) {
-            this.elements.startListeningBtn.disabled = true;
-            this.elements.startListeningBtn.innerHTML = '<i class="fas fa-microphone-slash"></i><span>Not Supported</span>';
-            warnings.push('Speech-to-Text is not supported in this browser.');
-        }
-        
-        if (!this.state.isAudioContextSupported) {
-            warnings.push('Audio visualizer may not work properly.');
-        }
-        
-        if (warnings.length > 0) {
-            this.showBrowserWarning(warnings);
-        }
-    }
-    
-    showBrowserWarning(warnings) {
-        // Create warning element if it doesn't exist
-        let warningElement = document.getElementById('browserWarning');
-        
-        if (!warningElement) {
-            warningElement = document.createElement('div');
-            warningElement.id = 'browserWarning';
-            warningElement.className = 'browser-warning';
-            warningElement.innerHTML = `
-                <div class="browser-warning-content">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <div>
-                        <p><strong>Browser Compatibility Notice</strong></p>
-                        <p class="small-text">${warnings.join(' ')} For best experience, use Chrome, Edge, or Safari.</p>
-                    </div>
-                </div>
-            `;
-            
-            // Insert at the beginning of the card body
-            const cardBody = document.querySelector('.readgo-section .card-body');
-            if (cardBody) {
-                cardBody.insertBefore(warningElement, cardBody.firstChild);
-                setTimeout(() => warningElement.classList.add('show'), 100);
-            }
-        }
+        return 'neutral';
     }
     
     setupEventListeners() {
         // TTS Text Input
-        this.elements.ttsTextInput.addEventListener('input', () => {
-            this.updateTTSCharCounter();
-            this.validateTTSInput();
-        });
+        if (this.elements.ttsTextInput) {
+            this.elements.ttsTextInput.addEventListener('input', () => {
+                this.updateTTSCharCounter();
+                this.validateTTSInput();
+            });
+            
+            // Pre-fill with sample text
+            if (!this.elements.ttsTextInput.value.trim()) {
+                this.elements.ttsTextInput.value = "Welcome to ReadGO+! This is a demonstration of the Text-to-Speech feature. You can type anything here and it will be converted to speech. Try changing the voice and settings to hear different styles.";
+            }
+        }
         
         // Voice Search
-        this.elements.voiceSearch.addEventListener('input', (e) => {
-            this.filterVoices(e.target.value);
-        });
+        if (this.elements.voiceSearch) {
+            this.elements.voiceSearch.addEventListener('input', (e) => {
+                this.filterVoices(e.target.value);
+            });
+        }
         
         // Settings Sliders
-        this.elements.rateSlider.addEventListener('input', (e) => {
-            this.elements.rateValue.textContent = `${parseFloat(e.target.value).toFixed(1)}x`;
-        });
+        if (this.elements.rateSlider && this.elements.rateValue) {
+            this.elements.rateSlider.addEventListener('input', (e) => {
+                this.elements.rateValue.textContent = `${parseFloat(e.target.value).toFixed(1)}x`;
+            });
+        }
         
-        this.elements.pitchSlider.addEventListener('input', (e) => {
-            this.elements.pitchValue.textContent = parseFloat(e.target.value).toFixed(1);
-        });
+        if (this.elements.pitchSlider && this.elements.pitchValue) {
+            this.elements.pitchSlider.addEventListener('input', (e) => {
+                this.elements.pitchValue.textContent = parseFloat(e.target.value).toFixed(1);
+            });
+        }
         
-        this.elements.volumeSlider.addEventListener('input', (e) => {
-            this.elements.volumeValue.textContent = `${Math.round(e.target.value * 100)}%`;
-        });
+        if (this.elements.volumeSlider && this.elements.volumeValue) {
+            this.elements.volumeSlider.addEventListener('input', (e) => {
+                this.elements.volumeValue.textContent = `${Math.round(e.target.value * 100)}%`;
+            });
+        }
         
         // TTS Controls
-        this.elements.generateVoiceBtn.addEventListener('click', () => this.generateVoice());
-        this.elements.playPauseBtn.addEventListener('click', () => this.togglePlayback());
-        this.elements.stopBtn.addEventListener('click', () => this.stopPlayback());
-        this.elements.recordBtn.addEventListener('click', () => this.toggleRecording());
+        if (this.elements.generateVoiceBtn) {
+            this.elements.generateVoiceBtn.addEventListener('click', () => this.generateVoice());
+        }
+        
+        if (this.elements.playPauseBtn) {
+            this.elements.playPauseBtn.addEventListener('click', () => this.togglePlayback());
+        }
+        
+        if (this.elements.stopBtn) {
+            this.elements.stopBtn.addEventListener('click', () => this.stopPlayback());
+        }
+        
+        if (this.elements.recordBtn) {
+            this.elements.recordBtn.addEventListener('click', () => this.toggleRecording());
+        }
         
         // STT Controls
-        this.elements.startListeningBtn.addEventListener('click', () => this.startListening());
-        this.elements.stopListeningBtn.addEventListener('click', () => this.stopListening());
-        this.elements.clearSttBtn.addEventListener('click', () => this.clearSTT());
-        this.elements.sttLanguage.addEventListener('change', () => this.updateRecognitionLanguage());
-        this.elements.copySttBtn.addEventListener('click', () => this.copySTT());
-        this.elements.downloadSttBtn.addEventListener('click', () => this.downloadSTT());
-        this.elements.saveSttHistoryBtn.addEventListener('click', () => this.saveSTTHistory());
+        if (this.elements.startListeningBtn) {
+            this.elements.startListeningBtn.addEventListener('click', () => this.startListening());
+        }
+        
+        if (this.elements.stopListeningBtn) {
+            this.elements.stopListeningBtn.addEventListener('click', () => this.stopListening());
+        }
+        
+        if (this.elements.clearSttBtn) {
+            this.elements.clearSttBtn.addEventListener('click', () => this.clearSTT());
+        }
+        
+        if (this.elements.sttLanguage) {
+            this.elements.sttLanguage.addEventListener('change', () => this.updateRecognitionLanguage());
+        }
+        
+        if (this.elements.copySttBtn) {
+            this.elements.copySttBtn.addEventListener('click', () => this.copySTT());
+        }
+        
+        if (this.elements.downloadSttBtn) {
+            this.elements.downloadSttBtn.addEventListener('click', () => this.downloadSTT());
+        }
+        
+        if (this.elements.saveSttHistoryBtn) {
+            this.elements.saveSttHistoryBtn.addEventListener('click', () => this.saveSTTHistory());
+        }
         
         // Tab Switching
         document.querySelectorAll('.voice-tab').forEach(tab => {
@@ -359,14 +438,17 @@ class ReadGOPlus {
         });
         
         // History Controls
-        this.elements.clearVoiceHistoryBtn.addEventListener('click', () => this.clearHistory());
-        this.elements.toggleVoiceHistoryView.addEventListener('click', () => this.toggleHistoryView());
+        if (this.elements.clearVoiceHistoryBtn) {
+            this.elements.clearVoiceHistoryBtn.addEventListener('click', () => this.clearHistory());
+        }
+        
+        if (this.elements.toggleVoiceHistoryView) {
+            this.elements.toggleVoiceHistoryView.addEventListener('click', () => this.toggleHistoryView());
+        }
         
         // Window events
         window.addEventListener('resize', () => {
             this.updateTabIndicator();
-            if (this.elements.audioVisualizer) this.resizeVisualizer(this.elements.audioVisualizer);
-            if (this.elements.sttVisualizer) this.resizeVisualizer(this.elements.sttVisualizer);
         });
         
         window.addEventListener('beforeunload', () => {
@@ -379,11 +461,11 @@ class ReadGOPlus {
             try {
                 this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 this.analyser = this.audioContext.createAnalyser();
-                this.analyser.fftSize = 2048;
+                this.analyser.fftSize = 256;
                 this.bufferLength = this.analyser.frequencyBinCount;
                 this.dataArray = new Uint8Array(this.bufferLength);
             } catch (error) {
-                console.warn('Failed to initialize Audio Context:', error);
+                console.warn('Audio Context setup failed:', error);
             }
         }
     }
@@ -392,40 +474,47 @@ class ReadGOPlus {
         // TTS Visualizer
         if (this.elements.audioVisualizer) {
             this.visualizerCtx = this.elements.audioVisualizer.getContext('2d');
-            this.resizeVisualizer(this.elements.audioVisualizer);
+            this.resizeCanvas(this.elements.audioVisualizer);
         }
         
         // STT Visualizer
         if (this.elements.sttVisualizer) {
             this.sttVisualizerCtx = this.elements.sttVisualizer.getContext('2d');
-            this.resizeVisualizer(this.elements.sttVisualizer);
+            this.resizeCanvas(this.elements.sttVisualizer);
         }
+        
+        window.addEventListener('resize', () => {
+            if (this.elements.audioVisualizer) this.resizeCanvas(this.elements.audioVisualizer);
+            if (this.elements.sttVisualizer) this.resizeCanvas(this.elements.sttVisualizer);
+        });
     }
     
-    resizeVisualizer(canvas) {
+    resizeCanvas(canvas) {
         if (!canvas || !canvas.parentElement) return;
         
         const container = canvas.parentElement;
-        const dpr = window.devicePixelRatio || 1;
         const rect = container.getBoundingClientRect();
         
-        canvas.width = rect.width * dpr;
-        canvas.height = rect.height * dpr;
-        
-        const ctx = canvas.getContext('2d');
-        ctx.scale(dpr, dpr);
+        canvas.width = rect.width;
+        canvas.height = rect.height;
         canvas.style.width = `${rect.width}px`;
         canvas.style.height = `${rect.height}px`;
     }
     
     setupSpeechRecognition() {
-        if (!this.state.isSpeechRecognitionSupported) return;
+        if (!this.state.isSpeechRecognitionSupported) {
+            if (this.elements.startListeningBtn) {
+                this.elements.startListeningBtn.disabled = true;
+                this.elements.startListeningBtn.innerHTML = '<i class="fas fa-microphone-slash"></i><span>Not Supported</span>';
+            }
+            return;
+        }
         
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         this.speechRecognition = new SpeechRecognition();
         this.speechRecognition.continuous = true;
         this.speechRecognition.interimResults = true;
-        this.speechRecognition.lang = this.elements.sttLanguage.value;
+        this.speechRecognition.lang = this.elements.sttLanguage ? this.elements.sttLanguage.value : 'en-US';
         
         this.speechRecognition.onstart = () => {
             this.state.isListening = true;
@@ -454,7 +543,7 @@ class ReadGOPlus {
         this.speechRecognition.onerror = (event) => {
             console.error('Speech recognition error:', event.error);
             this.stopListening();
-            this.showToast('Speech Recognition Error', event.error, 'error');
+            this.showToast('Speech Recognition Error', 'Please try again', 'error');
         };
         
         this.speechRecognition.onend = () => {
@@ -463,7 +552,7 @@ class ReadGOPlus {
     }
     
     populateVoices() {
-        if (!this.elements.voicesGrid) return;
+        if (!this.elements.voicesGrid || !this.elements.noVoices || !this.elements.voiceCount) return;
         
         if (this.state.voices.length === 0) {
             this.elements.noVoices.style.display = 'block';
@@ -478,6 +567,9 @@ class ReadGOPlus {
         
         this.renderVoiceCategories();
         this.filterVoices();
+        
+        // Update button state
+        this.validateTTSInput();
     }
     
     renderVoiceCategories() {
@@ -497,7 +589,7 @@ class ReadGOPlus {
                 const category = e.currentTarget.dataset.category;
                 this.state.selectedCategory = category;
                 this.renderVoiceCategories();
-                this.filterVoices(this.elements.voiceSearch.value);
+                this.filterVoices(this.elements.voiceSearch ? this.elements.voiceSearch.value : '');
             });
         });
     }
@@ -509,8 +601,7 @@ class ReadGOPlus {
         // Filter by category
         if (this.state.selectedCategory !== 'all') {
             filteredVoices = filteredVoices.filter(voice => 
-                voice.category === this.state.selectedCategory || 
-                (voice.gender === this.state.selectedCategory)
+                voice.category === this.state.selectedCategory
             );
         }
         
@@ -553,7 +644,7 @@ class ReadGOPlus {
                     <span class="voice-lang">${voice.lang || 'en-US'}</span>
                 </div>
                 <div class="voice-details">
-                    ${voice.isFallback ? 'Fallback voice' : 'System voice'} • ${voice.default ? 'Default' : 'Available'}
+                    ${voice.isBrowserVoice ? 'Browser voice' : 'Predefined voice'} • ${voice.default ? 'Default' : 'Available'}
                 </div>
                 <button class="voice-preview-btn" data-action="preview">
                     <i class="fas fa-play-circle"></i>
@@ -601,38 +692,27 @@ class ReadGOPlus {
     }
     
     previewVoice(voice) {
-        if (!this.speechSynthesis) {
+        if (!this.state.isSpeechSynthesisSupported) {
             this.showToast('Preview Not Available', 'Speech synthesis not supported', 'error');
             return;
         }
         
-        const utterance = new SpeechSynthesisUtterance('Hello, this is a voice preview.');
+        const utterance = new SpeechSynthesisUtterance("Hello, this is a voice preview.");
         
-        if (!voice.isFallback) {
-            utterance.voice = voice;
+        if (voice.isBrowserVoice && voice.voiceObject) {
+            utterance.voice = voice.voiceObject;
         }
         
         utterance.rate = 1.0;
         utterance.pitch = 1.0;
         utterance.volume = 0.5;
         
-        this.speechSynthesis.speak(utterance);
+        // Stop any current speech
+        speechSynthesis.cancel();
+        
+        // Speak
+        speechSynthesis.speak(utterance);
         this.showToast('Playing Preview', 'Listen to the voice sample', 'info');
-    }
-    
-    validateTTSInput() {
-        if (!this.elements.ttsTextInput || !this.elements.generateVoiceBtn) return false;
-        
-        const text = this.elements.ttsTextInput.value.trim();
-        const hasText = text.length > 0 && text.length <= 5000;
-        const hasVoice = this.state.selectedVoice !== null;
-        const isSupported = this.state.isSpeechSynthesisSupported;
-        
-        const isValid = hasText && hasVoice && isSupported;
-        
-        this.elements.generateVoiceBtn.disabled = !isValid;
-        
-        return isValid;
     }
     
     updateTTSCharCounter() {
@@ -653,7 +733,34 @@ class ReadGOPlus {
         this.validateTTSInput();
     }
     
-    async generateVoice() {
+    validateTTSInput() {
+        if (!this.elements.ttsTextInput || !this.elements.generateVoiceBtn) return false;
+        
+        const text = this.elements.ttsTextInput.value.trim();
+        const hasText = text.length > 0 && text.length <= 5000;
+        const hasVoice = this.state.selectedVoice !== null;
+        const isSupported = this.state.isSpeechSynthesisSupported;
+        
+        const isValid = hasText && hasVoice && isSupported;
+        
+        this.elements.generateVoiceBtn.disabled = !isValid;
+        
+        if (!isValid) {
+            if (!hasText) {
+                this.elements.generateVoiceBtn.title = 'Please enter text';
+            } else if (!hasVoice) {
+                this.elements.generateVoiceBtn.title = 'Please select a voice';
+            } else if (!isSupported) {
+                this.elements.generateVoiceBtn.title = 'Speech synthesis not supported';
+            }
+        } else {
+            this.elements.generateVoiceBtn.title = 'Generate voice from text';
+        }
+        
+        return isValid;
+    }
+    
+    generateVoice() {
         const text = this.elements.ttsTextInput.value.trim();
         
         if (!this.validateTTSInput()) {
@@ -667,28 +774,33 @@ class ReadGOPlus {
             return;
         }
         
-        this.elements.generateVoiceBtn.classList.add('loading');
+        // Show loading state
+        if (this.elements.generateVoiceBtn) {
+            this.elements.generateVoiceBtn.classList.add('loading');
+        }
+        
+        // Stop any current speech
+        speechSynthesis.cancel();
         
         try {
-            // Stop any current playback
-            this.stopPlayback();
-            
             // Create utterance
             const utterance = new SpeechSynthesisUtterance(text);
             
-            // Set voice if available (for fallback voices, use default)
-            if (this.state.selectedVoice && !this.state.selectedVoice.isFallback) {
-                utterance.voice = this.state.selectedVoice;
+            // Set voice if available
+            if (this.state.selectedVoice.isBrowserVoice && this.state.selectedVoice.voiceObject) {
+                utterance.voice = this.state.selectedVoice.voiceObject;
             }
             
-            utterance.rate = parseFloat(this.elements.rateSlider.value);
-            utterance.pitch = parseFloat(this.elements.pitchSlider.value);
-            utterance.volume = parseFloat(this.elements.volumeSlider.value);
+            // Apply settings
+            utterance.rate = this.elements.rateSlider ? parseFloat(this.elements.rateSlider.value) : 1.0;
+            utterance.pitch = this.elements.pitchSlider ? parseFloat(this.elements.pitchSlider.value) : 1.0;
+            utterance.volume = this.elements.volumeSlider ? parseFloat(this.elements.volumeSlider.value) : 1.0;
             
             this.state.currentUtterance = utterance;
             
             // Set up event handlers
             utterance.onstart = () => {
+                console.log('Speech started');
                 this.state.isSpeaking = true;
                 this.state.isPaused = false;
                 this.updatePlaybackUI(true);
@@ -707,6 +819,7 @@ class ReadGOPlus {
             };
             
             utterance.onend = () => {
+                console.log('Speech ended');
                 this.stopPlayback();
                 
                 if (this.elements.visualizerWrapper) {
@@ -733,7 +846,7 @@ class ReadGOPlus {
                     if (window.whatsDPApp && typeof window.whatsDPApp.openFollowPopup === 'function') {
                         window.whatsDPApp.openFollowPopup();
                     }
-                }, 1000);
+                }, 1500);
             };
             
             utterance.onerror = (event) => {
@@ -743,7 +856,7 @@ class ReadGOPlus {
             };
             
             // Start speaking
-            this.speechSynthesis.speak(utterance);
+            speechSynthesis.speak(utterance);
             
             // Show playback controls
             if (this.elements.playbackControls) {
@@ -754,7 +867,10 @@ class ReadGOPlus {
             console.error('Error generating voice:', error);
             this.showToast('Generation Failed', 'Please try again', 'error');
         } finally {
-            this.elements.generateVoiceBtn.classList.remove('loading');
+            // Remove loading state
+            if (this.elements.generateVoiceBtn) {
+                this.elements.generateVoiceBtn.classList.remove('loading');
+            }
         }
     }
     
@@ -768,9 +884,9 @@ class ReadGOPlus {
             timestamp: new Date().toISOString(),
             voice: this.state.selectedVoice?.name || 'Default',
             settings: {
-                rate: parseFloat(this.elements.rateSlider.value),
-                pitch: parseFloat(this.elements.pitchSlider.value),
-                volume: parseFloat(this.elements.volumeSlider.value)
+                rate: this.elements.rateSlider ? parseFloat(this.elements.rateSlider.value) : 1.0,
+                pitch: this.elements.pitchSlider ? parseFloat(this.elements.pitchSlider.value) : 1.0,
+                volume: this.elements.volumeSlider ? parseFloat(this.elements.volumeSlider.value) : 1.0
             }
         };
         
@@ -786,11 +902,11 @@ class ReadGOPlus {
     }
     
     togglePlayback() {
-        if (!this.speechSynthesis) return;
+        if (!this.state.isSpeechSynthesisSupported) return;
         
         if (this.state.isSpeaking) {
             if (this.state.isPaused) {
-                this.speechSynthesis.resume();
+                speechSynthesis.resume();
                 this.state.isPaused = false;
                 if (this.elements.playPauseBtn) {
                     this.elements.playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
@@ -798,7 +914,7 @@ class ReadGOPlus {
                 this.startPlaybackTimer();
                 this.startAudioVisualizer();
             } else {
-                this.speechSynthesis.pause();
+                speechSynthesis.pause();
                 this.state.isPaused = true;
                 if (this.elements.playPauseBtn) {
                     this.elements.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
@@ -810,8 +926,8 @@ class ReadGOPlus {
     }
     
     stopPlayback() {
-        if (this.speechSynthesis && this.state.isSpeaking) {
-            this.speechSynthesis.cancel();
+        if (this.state.isSpeechSynthesisSupported && this.state.isSpeaking) {
+            speechSynthesis.cancel();
             this.state.isSpeaking = false;
             this.state.isPaused = false;
             this.updatePlaybackUI(false);
@@ -846,7 +962,7 @@ class ReadGOPlus {
             if (!this.state.currentUtterance) return;
             
             const elapsed = Date.now() - this.state.playbackStartTime;
-            const total = this.state.currentUtterance.text.length * 60; // Better estimate
+            const total = this.state.currentUtterance.text.length * 50; // Estimate
             
             const progress = Math.min((elapsed / total) * 100, 100);
             
@@ -878,126 +994,22 @@ class ReadGOPlus {
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
     
-    async toggleRecording() {
-        if (!this.state.isRecordingAudio) {
-            await this.startRecording();
-        } else {
-            this.stopRecording();
-        }
-    }
-    
-    async startRecording() {
-        try {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                throw new Error('Media devices not supported');
-            }
-            
-            this.audioStream = await navigator.mediaDevices.getUserMedia({ 
-                audio: {
-                    echoCancellation: true,
-                    noiseSuppression: true,
-                    autoGainControl: true
-                }
-            });
-            
-            const mimeTypes = ['audio/webm', 'audio/mp4', 'audio/ogg'];
-            let mimeType = '';
-            
-            for (const type of mimeTypes) {
-                if (MediaRecorder.isTypeSupported(type)) {
-                    mimeType = type;
-                    break;
-                }
-            }
-            
-            if (!mimeType) {
-                mimeType = '';
-            }
-            
-            this.mediaRecorder = new MediaRecorder(this.audioStream, { mimeType });
-            this.state.recordedChunks = [];
-            
-            this.mediaRecorder.ondataavailable = (event) => {
-                if (event.data.size > 0) {
-                    this.state.recordedChunks.push(event.data);
-                }
-            };
-            
-            this.mediaRecorder.onstop = () => {
-                if (this.state.recordedChunks.length > 0) {
-                    const audioBlob = new Blob(this.state.recordedChunks, { 
-                        type: this.mediaRecorder.mimeType || 'audio/webm' 
-                    });
-                    this.downloadRecording(audioBlob);
-                }
-                
-                // Cleanup
-                if (this.audioStream) {
-                    this.audioStream.getTracks().forEach(track => track.stop());
-                }
-                this.state.isRecordingAudio = false;
-                this.updateRecordingUI(false);
-            };
-            
-            // Start recording
-            this.mediaRecorder.start();
-            this.state.isRecordingAudio = true;
-            this.updateRecordingUI(true);
-            
-            this.showToast('Recording Started', 'Recording audio...', 'info');
-            
-        } catch (error) {
-            console.error('Error starting recording:', error);
-            this.showToast('Recording Failed', 'Please check microphone permissions', 'error');
-        }
-    }
-    
-    stopRecording() {
-        if (this.mediaRecorder && this.state.isRecordingAudio) {
-            this.mediaRecorder.stop();
-            this.showToast('Recording Stopped', 'Audio saved successfully', 'success');
-        }
-    }
-    
-    updateRecordingUI(isRecording) {
-        if (!this.elements.recordBtn || !this.elements.recordBtnText) return;
-        
-        if (isRecording) {
-            this.elements.recordBtn.classList.add('recording');
-            this.elements.recordBtnText.textContent = 'Stop Recording';
-            this.elements.recordBtn.innerHTML = '<i class="fas fa-stop"></i><span>Stop Recording</span>';
-        } else {
-            this.elements.recordBtn.classList.remove('recording');
-            this.elements.recordBtnText.textContent = 'Record';
-            this.elements.recordBtn.innerHTML = '<i class="fas fa-record-vinyl"></i><span>Record</span>';
-        }
-    }
-    
-    downloadRecording(blob) {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `readgo-voice-${Date.now()}.${blob.type.includes('webm') ? 'webm' : 'wav'}`;
-        document.body.appendChild(a);
-        a.click();
-        
-        setTimeout(() => {
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }, 100);
-    }
-    
     startAudioVisualizer() {
         if (!this.audioContext || !this.analyser || !this.visualizerCtx) return;
         
-        // Create audio source (simulated for speech)
-        this.source = this.audioContext.createOscillator();
-        this.source.frequency.value = 200;
-        this.source.connect(this.analyser);
-        this.analyser.connect(this.audioContext.destination);
-        this.source.start();
-        
-        this.animationFrameId = requestAnimationFrame(() => this.drawAudioVisualizer());
+        try {
+            // Create oscillator for visualization
+            this.source = this.audioContext.createOscillator();
+            this.source.type = 'sine';
+            this.source.frequency.value = 200;
+            this.source.connect(this.analyser);
+            this.analyser.connect(this.audioContext.destination);
+            this.source.start();
+            
+            this.animationFrameId = requestAnimationFrame(() => this.drawAudioVisualizer());
+        } catch (error) {
+            console.warn('Audio visualizer error:', error);
+        }
     }
     
     stopAudioVisualizer() {
@@ -1007,8 +1019,12 @@ class ReadGOPlus {
         }
         
         if (this.source) {
-            this.source.stop();
-            this.source.disconnect();
+            try {
+                this.source.stop();
+                this.source.disconnect();
+            } catch (e) {
+                // Ignore errors
+            }
             this.source = null;
         }
         
@@ -1023,8 +1039,8 @@ class ReadGOPlus {
         if (!this.visualizerCtx || !this.analyser || !this.elements.audioVisualizer) return;
         
         const canvas = this.elements.audioVisualizer;
-        const width = canvas.width / (window.devicePixelRatio || 1);
-        const height = canvas.height / (window.devicePixelRatio || 1);
+        const width = canvas.width;
+        const height = canvas.height;
         const ctx = this.visualizerCtx;
         
         // Clear canvas with fade effect
@@ -1042,25 +1058,20 @@ class ReadGOPlus {
         gradient.addColorStop(0.5, '#34B7F1');
         gradient.addColorStop(1, '#9B59B6');
         
-        // Draw organic wave
+        // Draw wave
         ctx.beginPath();
         
-        const sliceWidth = width / (this.bufferLength || 256);
+        const sliceWidth = width / (this.bufferLength || 128);
         let x = 0;
         
-        for (let i = 0; i < (this.bufferLength || 256); i++) {
-            const v = this.dataArray ? (this.dataArray[i] / 255.0) : (Math.random() * 0.5);
-            const y = height - (v * height * 0.8);
+        for (let i = 0; i < (this.bufferLength || 128); i++) {
+            const v = this.dataArray ? (this.dataArray[i] / 255.0) : (Math.sin(Date.now() / 1000 + i) * 0.5 + 0.5);
+            const y = height - (v * height * 0.7);
             
             if (i === 0) {
                 ctx.moveTo(x, y);
             } else {
-                // Smooth curve
-                ctx.bezierCurveTo(
-                    x - sliceWidth/2, y,
-                    x - sliceWidth/2, y,
-                    x, y
-                );
+                ctx.lineTo(x, y);
             }
             
             x += sliceWidth;
@@ -1079,18 +1090,14 @@ class ReadGOPlus {
         // Draw outline
         ctx.beginPath();
         x = 0;
-        for (let i = 0; i < (this.bufferLength || 256); i++) {
-            const v = this.dataArray ? (this.dataArray[i] / 255.0) : (Math.random() * 0.5);
-            const y = height - (v * height * 0.8);
+        for (let i = 0; i < (this.bufferLength || 128); i++) {
+            const v = this.dataArray ? (this.dataArray[i] / 255.0) : (Math.sin(Date.now() / 1000 + i) * 0.5 + 0.5);
+            const y = height - (v * height * 0.7);
             
             if (i === 0) {
                 ctx.moveTo(x, y);
             } else {
-                ctx.bezierCurveTo(
-                    x - sliceWidth/2, y,
-                    x - sliceWidth/2, y,
-                    x, y
-                );
+                ctx.lineTo(x, y);
             }
             
             x += sliceWidth;
@@ -1100,19 +1107,6 @@ class ReadGOPlus {
         ctx.lineWidth = 2;
         ctx.globalAlpha = 0.8;
         ctx.stroke();
-        
-        // Draw floating particles
-        for (let i = 0; i < 5; i++) {
-            const particleX = (Math.sin(Date.now() / 1000 + i) * 0.5 + 0.5) * width;
-            const particleY = height - (Math.random() * height * 0.5);
-            const size = 2 + Math.random() * 3;
-            
-            ctx.beginPath();
-            ctx.arc(particleX, particleY, size, 0, Math.PI * 2);
-            ctx.fillStyle = gradient;
-            ctx.globalAlpha = 0.6;
-            ctx.fill();
-        }
         
         this.animationFrameId = requestAnimationFrame(() => this.drawAudioVisualizer());
     }
@@ -1139,8 +1133,8 @@ class ReadGOPlus {
         if (!this.sttVisualizerCtx || !this.elements.sttVisualizer) return;
         
         const canvas = this.elements.sttVisualizer;
-        const width = canvas.width / (window.devicePixelRatio || 1);
-        const height = canvas.height / (window.devicePixelRatio || 1);
+        const width = canvas.width;
+        const height = canvas.height;
         const ctx = this.sttVisualizerCtx;
         const time = Date.now() / 1000;
         
@@ -1186,7 +1180,7 @@ class ReadGOPlus {
         
         // Mic icon
         ctx.fillStyle = 'white';
-        ctx.font = 'bold 20px "Font Awesome 5 Free"';
+        ctx.font = 'bold 20px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText('🎤', width / 2, height / 2);
@@ -1234,11 +1228,6 @@ class ReadGOPlus {
         if (this.elements.sttVisualizerStatus) {
             this.elements.sttVisualizerStatus.textContent = isListening ? 'Listening' : 'Ready';
             this.elements.sttVisualizerStatus.classList.toggle('active', isListening);
-        }
-        
-        const visualizerWrapper = this.elements.sttVisualizer?.parentElement?.parentElement;
-        if (visualizerWrapper) {
-            visualizerWrapper.classList.toggle('playing', isListening);
         }
     }
     
@@ -1467,9 +1456,7 @@ class ReadGOPlus {
             <div class="voice-history-item" data-id="${item.id}">
                 <div class="history-item-header">
                     <div class="history-title">
-                        <input type="text" value="${item.title}" 
-                               onchange="window.readGOApp.renameHistoryItem(${item.id}, this.value)"
-                               maxlength="30">
+                        <div class="history-title-text">${item.title}</div>
                         <span class="history-type ${item.type}">${item.type === 'voice' ? 'VOICE' : 'TEXT'}</span>
                     </div>
                     <div class="history-time">${this.formatHistoryTime(item.timestamp)}</div>
@@ -1509,15 +1496,6 @@ class ReadGOPlus {
         if (diffDays < 7) return `${diffDays}d ago`;
         
         return date.toLocaleDateString();
-    }
-    
-    renameHistoryItem(id, newTitle) {
-        const item = this.state.history.find(h => h.id === id);
-        if (item) {
-            item.title = newTitle.trim() || item.title;
-            this.saveHistory();
-            this.showToast('Renamed', 'Item title updated', 'success');
-        }
     }
     
     playHistoryItem(id) {
@@ -1679,7 +1657,6 @@ class ReadGOPlus {
     cleanup() {
         this.stopPlayback();
         this.stopListening();
-        this.stopRecording();
         this.stopAudioVisualizer();
         this.stopSTTVisualizer();
         
@@ -1693,7 +1670,7 @@ class ReadGOPlus {
     }
 }
 
-// Initialize ReadGO+ when DOM is loaded
+// Initialize immediately when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.readGOApp = new ReadGOPlus();
 });
