@@ -1,0 +1,92 @@
+<!-- Premium Video Player Container -->
+<div class="video-hero-section" id="videoHero">
+    <!-- Skeleton Loader -->
+    <div class="video-skeleton" id="videoSkeleton">
+        <div class="skeleton-content">
+            <div class="skeleton-video"></div>
+            <div class="skeleton-controls">
+                <div class="skeleton-button"></div>
+                <div class="skeleton-button"></div>
+                <div class="skeleton-button"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Container -->
+    <div class="video-container" id="videoContainer" style="display: none;">
+        <!-- Premium Glow Effects -->
+        <div class="video-glow-effects">
+            <div class="glow-layer glow-1"></div>
+            <div class="glow-layer glow-2"></div>
+            <div class="glow-layer glow-3"></div>
+            <div class="glow-layer glow-4"></div>
+        </div>
+        
+        <!-- Video Wrapper -->
+        <div class="video-wrapper" id="videoWrapper">
+            <!-- Direct MP4 Video -->
+            <video 
+                id="directVideo" 
+                class="video-player" 
+                playsinline 
+                webkit-playsinline 
+                preload="metadata"
+                style="display: none;"
+            >
+                Your browser does not support the video tag.
+            </video>
+            
+            <!-- YouTube Iframe -->
+            <div id="youtubePlayer" class="youtube-player" style="display: none;"></div>
+        </div>
+        
+        <!-- Video Controls Overlay -->
+        <div class="video-controls-overlay">
+            <div class="controls-header">
+                <div class="video-badge">
+                    <i class="fas fa-play-circle"></i>
+                    <span>Premium Content</span>
+                </div>
+                <div class="video-indicator" id="videoIndicator">
+                    <i class="fas fa-circle"></i>
+                    <span>Auto Playing</span>
+                </div>
+            </div>
+            
+            <div class="controls-center">
+                <button class="control-btn btn-play-pause" id="playPauseBtn">
+                    <i class="fas fa-pause"></i>
+                </button>
+            </div>
+            
+            <div class="controls-footer">
+                <div class="video-info">
+                    <span class="video-source" id="videoSource">Loading...</span>
+                    <span class="video-quality">HD Premium</span>
+                </div>
+                
+                <div class="controls-actions">
+                    <button class="control-btn btn-small" id="prevVideoBtn" title="Previous Video">
+                        <i class="fas fa-step-backward"></i>
+                    </button>
+                    <button class="control-btn btn-small" id="muteBtn" title="Toggle Mute">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                    <button class="control-btn btn-small" id="nextVideoBtn" title="Next Video">
+                        <i class="fas fa-step-forward"></i>
+                    </button>
+                    <button class="control-btn btn-small" id="fullscreenBtn" title="Fullscreen">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Video Progress Bar -->
+        <div class="video-progress">
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+    </div>
+</div>

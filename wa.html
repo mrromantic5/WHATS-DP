@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WalinkGO - WhatsApp Link Generator</title>
+    <meta name="description" content="Premium WhatsApp Link Generator with QR Codes">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="walink.css">
+     <link rel="stylesheet" href="video.css">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔗</text></svg>">
+    <link rel="icon" type="image/x-icon" href="/favicon1.ico">
+    <meta property="og:image" content="https://whats-dp.vercel.app/favicon1.ico" />
+    <meta name="twitter:image" content="https://whats-dp.vercel.app/favicon1.ico" />
+    
+    <style>
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            padding: 0.75rem 0.5rem;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            background: rgba(var(--card-bg-rgb), 0.95);
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all var(--transition-fast);
+            flex: 1;
+            max-width: 120px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-item:hover {
+            color: var(--primary-color);
+            background: var(--bg-tertiary);
+            transform: translateY(-2px);
+        }
+        
+        .nav-item.active {
+            color: var(--primary-color);
+            background: rgba(37, 211, 102, 0.1);
+        }
+        
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 0 0 2px 2px;
+        }
+        
+        .nav-icon {
+            font-size: 1.25rem;
+            margin-bottom: 0.25rem;
+            transition: transform var(--transition-fast);
+        }
+        
+        .nav-item:hover .nav-icon {
+            transform: scale(1.1);
+        }
+        
+        .nav-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        
+        .nav-item.active .nav-label {
+            font-weight: 600;
+        }
+        
+        .nav-badge {
+            position: absolute;
+            top: 4px;
+            right: 8px;
+            background: #ff4757;
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 0.1rem 0.3rem;
+            border-radius: 10px;
+            border: 2px solid var(--card-bg);
+            min-width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @media (max-width: 768px) {
+            .bottom-nav {
+                padding: 0.5rem;
+            }
+            
+            .nav-item {
+                padding: 0.375rem;
+                min-width: 60px;
+            }
+            
+            .nav-icon {
+                font-size: 1.1rem;
+                margin-bottom: 0.125rem;
+            }
+            
+            .nav-label {
+                font-size: 0.7rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .bottom-nav {
+                padding: 0.375rem;
+            }
+            
+            .nav-label {
+                display: none;
+            }
+            
+            .nav-icon {
+                margin-bottom: 0;
+                font-size: 1.2rem;
+            }
+            
+            .nav-item {
+                min-width: 50px;
+            }
+        }
+        
+        .main-content {
+            padding-bottom: 80px;
+        }
+        
+        .page-transition {
+            animation: pageFadeIn 0.3s ease;
+        }
+        
+        @keyframes pageFadeIn {
+            from { opacity: 0.8; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="gate-loader" id="gateLoader">
+        <div class="gate-loader-content">
+            <div class="loader-logo">
+                <i class="fab fa-whatsapp"></i>
+                <span>WalinkGO</span>
+            </div>
+            <div class="loader-progress">
+                <div class="progress-bar"></div>
+            </div>
+            <p class="loader-text">Loading WalinkGO...</p>
+        </div>
+    </div>
+    
+    
+
+    <div class="container" id="mainContainer">
+        <header class="main-header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fab fa-whatsapp"></i>
+                    <h1>Walink<span class="logo-accent">GO</span></h1>
+                </div>
+                
+                <div class="header-controls">
+                    <div class="theme-toggle">
+                        <input type="checkbox" id="themeSwitch" class="theme-checkbox">
+                        <label for="themeSwitch" class="theme-label">
+                            <i class="fas fa-sun"></i>
+                            <i class="fas fa-moon"></i>
+                            <span class="theme-ball"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Video Player Container -->
+<div class="video-player-section">
+    <div class="video-header">
+        <div class="video-title-container">
+            <i class="fas fa-play-circle"></i>
+            <h2>Featured Content</h2>
+            <span class="video-badge">Premium</span>
+        </div>
+        <div class="video-controls-header">
+            <button class="btn-video-control" id="prevVideo" title="Previous video">
+                <i class="fas fa-step-backward"></i>
+            </button>
+            <button class="btn-video-control" id="nextVideo" title="Next video">
+                <i class="fas fa-step-forward"></i>
+            </button>
+            <button class="btn-video-control" id="shuffleVideos" title="Shuffle videos">
+                <i class="fas fa-random"></i>
+            </button>
+        </div>
+    </div>
+    
+    <div class="video-player-wrapper">
+        <!-- Simple Glow Effect -->
+        <div class="video-glow"></div>
+        
+        <!-- Video Container -->
+        <div class="video-container" id="videoContainer">
+            <!-- Skeleton Loader -->
+            <div class="video-skeleton" id="videoSkeleton">
+                <div class="skeleton-shimmer"></div>
+                <div class="skeleton-placeholder">
+                    <i class="fas fa-play-circle"></i>
+                    <p>Loading premium content...</p>
+                </div>
+            </div>
+            
+            <!-- YouTube Player Container -->
+            <div class="youtube-container" id="youtubeContainer"></div>
+            
+            <!-- Native Video Player -->
+            <video class="native-video" id="nativeVideo" playsinline webkit-playsinline>
+                Your browser does not support the video tag.
+            </video>
+            
+            <!-- Video Overlay Controls -->
+            <div class="video-overlay" id="videoOverlay">
+                <button class="play-pause-btn" id="playPauseBtn">
+                    <i class="fas fa-play"></i>
+                </button>
+                <button class="mute-btn" id="muteBtn">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+                <div class="video-progress" id="videoProgress">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <div class="video-time" id="videoTime">0:00 / 0:00</div>
+            </div>
+        </div>
+        
+        <!-- Video Source Selector -->
+        <div class="video-source-selector">
+            <div class="source-buttons">
+                <button class="source-btn active" data-source="direct">
+                    <i class="fas fa-film"></i>
+                    <span>Direct Videos</span>
+                </button>
+                <button class="source-btn" data-source="youtube">
+                    <i class="fab fa-youtube"></i>
+                    <span>YouTube</span>
+                </button>
+                <button class="source-btn" data-source="mixed">
+                    <i class="fas fa-random"></i>
+                    <span>Mixed Playlist</span>
+                </button>
+            </div>
+            <div class="current-video-info">
+                <i class="fas fa-info-circle"></i>
+                <span id="currentVideoInfo">Loading playlist...</span>
+            </div>
+        </div>
+    </div>
+</div>
+      
+        <main class="app-main main-content page-transition">         
+            <div class="walinkgo-section" id="walinkgoSection">
+                <div class="card input-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-link" style="color: var(--primary-color);"></i> <span class="logo-accent">WalinkGO</span> WhatsApp Link Generator</h2>
+                        <p class="card-subtitle">Generate premium WhatsApp links with custom messages</p>
+                    </div>
+                    
+                    <div class="card-body">                     
+                        <div class="walink-inputs">
+                            <div class="input-group walink-number-group">
+                                <div class="input-label">
+                                    <i class="fas fa-phone-alt"></i>
+                                    <span>WhatsApp Number</span>
+                                </div>
+                                
+                                <div class="number-input-combined">
+                                    <div class="country-selector-container" id="walinkCountrySelector">
+                                    </div>
+                                    <div class="number-input-wrapper">
+                                        <input 
+                                            type="tel" 
+                                            id="walinkNumber" 
+                                            placeholder="XXXXXXXXXX"
+                                            pattern="^[0-9]{8,12}$"
+                                            maxlength="12"
+                                            autocomplete="off"
+                                            aria-label="WhatsApp phone number for link generation"
+                                            class="walink-number-input"
+                                        >
+                                        <div class="input-validation">
+                                            <i class="fas fa-check-circle valid-icon"></i>
+                                            <i class="fas fa-exclamation-circle invalid-icon"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="input-hint">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>Enter phone number without country code</span>
+                                </div>
+                            </div>                           
+                            <div class="input-group walink-message-group">
+                                <div class="input-label">
+                                    <i class="fas fa-comment-alt"></i>
+                                    <span>Custom Message (Optional)</span>
+                                    <span class="char-counter" id="messageCounter">0/500</span>
+                                </div>
+                                <textarea 
+                                    id="walinkMessage" 
+                                    placeholder="Type your message here... You can use emojis 😊"
+                                    rows="3"
+                                    maxlength="500"
+                                    aria-label="Custom message for WhatsApp link"
+                                    class="walink-message-input"
+                                ></textarea>
+                                <div class="input-hint">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>Message will be automatically URL-encoded</span>
+                                </div>
+                            </div>                           
+                            <div class="generate-button-container">
+                                <button class="btn-primary btn-generate" id="generateLinkBtn" disabled>
+                                    <span class="btn-text">Generate WhatsApp Link</span>
+                                    <span class="btn-loader">
+                                        <div class="spinner"></div>
+                                    </span>
+                                    <i class="fas fa-bolt btn-icon-right"></i>
+                                </button>
+                                <div class="api-info">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <span>Secure link generation · No data stored on our servers</span>
+                                </div>
+                            </div>
+                        </div>                        
+                        <div class="walink-output" id="walinkOutput" style="display: none;">
+                            <div class="output-header">
+                                <h3><i class="fas fa-check-circle" style="color: var(--primary-color);"></i> Link Generated Successfully</h3>
+                                <div class="output-meta">
+                                    <span class="meta-time" id="outputTime">Just now</span>
+                                </div>
+                            </div>                            
+                            <div class="link-container">
+                                <div class="link-preview" id="linkPreview">
+                                    <i class="fab fa-whatsapp" style="color: var(--primary-color);"></i>
+                                    <div class="link-text-container">
+                                        <span class="link-label">WhatsApp Link:</span>
+                                        <span class="link-text" id="generatedLink">Loading...</span>
+                                    </div>
+                                </div>
+                                <div class="link-actions">
+                                    <button class="btn-secondary" id="copyLinkBtn">
+                                        <i class="fas fa-copy"></i>
+                                        <span>Copy Link</span>
+                                    </button>
+                                    <button class="btn-secondary" id="shareLinkBtn">
+                                        <i class="fas fa-share-alt"></i>
+                                        <span>Share</span>
+                                    </button>
+                                    <button class="btn-secondary" id="testLinkBtn">
+                                        <i class="fab fa-whatsapp"></i>
+                                        <span>Test Link</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="qr-section" id="qrSection">
+                                <div class="qr-header">
+                                    <h4><i class="fas fa-qrcode" style="color: var(--primary-color);"></i> QR Code</h4>
+                                    <p class="qr-subtitle">Scan to open WhatsApp with your message</p>
+                                </div>
+                                <div class="qr-container">
+                                    <div class="qr-placeholder" id="qrPlaceholder">
+                                        <i class="fas fa-qrcode"></i>
+                                        <p>QR Code will appear here</p>
+                                    </div>
+                                    <canvas id="qrCanvas" style="display: none;"></canvas>
+                                    <img id="qrImage" alt="WhatsApp QR Code" style="display: none;">
+                                </div>
+                                <div class="qr-actions">
+                                    <button class="btn-secondary" id="downloadQRBtn" disabled>
+                                        <i class="fas fa-download"></i>
+                                        <span>Download QR</span>
+                                    </button>
+                                    <button class="btn-secondary" id="shareQRBtn" disabled>
+                                        <i class="fas fa-share-alt"></i>
+                                        <span>Share QR</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="quick-actions">
+                                <button class="btn-secondary btn-small" id="newLinkBtn">
+                                    <i class="fas fa-plus"></i>
+                                    <span>Create New Link</span>
+                                </button>
+                                <button class="btn-secondary btn-small" id="saveToHistoryBtn">
+                                    <i class="fas fa-save"></i>
+                                    <span>Save to Favorites</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <h3><i class="fas fa-chart-pie" style="color: var(--primary-color);"></i> WalinkGO Statistics</h3>
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <div class="stat-value" id="totalLinks">0</div>
+                                <div class="stat-label">Total Links</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value" id="linksCopied">0</div>
+                                <div class="stat-label">Links Copied</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value" id="successRate">100%</div>
+                                <div class="stat-label">Success Rate</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card history-card">
+                    <div class="card-header history-header">
+                        <h3><i class="fas fa-history" style="color: var(--primary-color);"></i> Link History</h3>
+                        <div class="history-header-actions">
+                            <button class="btn-icon-sm" id="toggleHistoryView" aria-label="Toggle view">
+                                <i class="fas fa-th"></i>
+                            </button>
+                            <button class="btn-icon-sm" id="clearWalinkHistoryBtn" aria-label="Clear history">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body history-body">
+                        <div class="history-empty" id="walinkHistoryEmpty">
+                            <i class="fas fa-link"></i>
+                            <p>No link history yet</p>
+                            <p class="small-text">Generate your first WhatsApp link</p>
+                        </div>
+                        
+                        <div class="history-list" id="walinkHistoryList">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <footer class="main-footer">
+            <div class="footer-content">
+                <p>© TECH LYFE TEAM - 2026 All rigth reserved</p>
+                <p class="footer-links">
+                    <span>WalinkGO · WhatsApp Link Generator</span>
+                    <span class="footer-separator">|</span>
+                    <span>Secure · Fast · Reliable</span>
+                </p>
+            </div>
+        </footer>
+    </div>
+  
+    
+    <div class="modal" id="countryModal">
+        <div class="modal-overlay" id="countryModalOverlay"></div>
+        <div class="modal-content country-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-globe-americas"></i> Select Country Code</h3>
+                <button class="btn-icon-sm modal-close" id="countryModalClose" aria-label="Close modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="country-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="countrySearch" placeholder="Search countries..." autocomplete="off">
+                    <button class="btn-icon-sm" id="clearSearch" aria-label="Clear search">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="country-list-container">
+                    <div class="country-list" id="countryList">                 
+                    </div>
+                </div>
+                
+                <div class="add-country-section">
+                    <button class="btn-secondary btn-add-country" id="addCountryBtn">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Add Custom Country</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="addCountryModal">
+        <div class="modal-overlay" id="addCountryModalOverlay"></div>
+        <div class="modal-content add-country-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> Add Custom Country</h3>
+                <button class="btn-icon-sm modal-close" id="addCountryModalClose" aria-label="Close modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="customCountryName">
+                        <i class="fas fa-flag"></i> Country Name
+                    </label>
+                    <input type="text" id="customCountryName" placeholder="e.g., United States" autocomplete="off">
+                    <div class="form-error" id="countryNameError"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customCountryCode">
+                        <i class="fas fa-hashtag"></i> Country Code
+                    </label>
+                    <div class="input-with-prefix">
+                        <span class="prefix">+</span>
+                        <input type="text" id="customCountryCode" placeholder="1" maxlength="5" autocomplete="off">
+                    </div>
+                    <div class="form-error" id="countryCodeError"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customCountryFlag">
+                        <i class="fas fa-image"></i> Flag Emoji (Optional)
+                    </label>
+                    <input type="text" id="customCountryFlag" placeholder="🇺🇸" maxlength="4" autocomplete="off">
+                    <div class="flag-preview" id="flagPreview"></div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancelAddCountry">
+                    <i class="fas fa-times"></i>
+                    <span>Cancel</span>
+                </button>
+                <button class="btn-primary" id="saveCountryBtn">
+                    <i class="fas fa-save"></i>
+                    <span>Save Country</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+  
+    <div class="modal" id="followPopup">
+        <div class="modal-overlay" id="followPopupOverlay"></div>
+        <div class="modal-content follow-popup">
+            <div class="modal-header">
+                <h3><i class="fab fa-whatsapp"></i> Stay Connected!</h3>
+                <button class="btn-icon-sm modal-close" id="followPopupClose" aria-label="Close popup">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="follow-content">
+                    <div class="follow-icon">
+                        <i class="fab fa-whatsapp"></i>
+                        <div class="follow-badge">New</div>
+                    </div>
+                    
+                    <h4>Join Our WhatsApp Channel</h4>
+                    <p class="follow-description">
+                        Get instant updates, new features, and exclusive WhatsApp tips directly in your WhatsApp.
+                        Be the first to know about updates!
+                    </p>
+                    
+                    <div class="follow-features">
+                        <div class="feature-item">
+                            <i class="fas fa-bolt"></i>
+                            <span>Instant Updates</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-star"></i>
+                            <span>Exclusive Tips</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Privacy Focused</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-gift"></i>
+                            <span>Free Resources</span>
+                        </div>
+                    </div>
+                    
+                    <div class="follow-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">10K+</div>
+                            <div class="stat-label">Members</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">24/7</div>
+                            <div class="stat-label">Updates</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">100%</div>
+                            <div class="stat-label">Free</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-secondary" id="followLaterBtn">
+                    <i class="fas fa-clock"></i>
+                    <span>Maybe Later</span>
+                </button>
+                <button class="btn-primary" id="followNowBtn">
+                    <i class="fab fa-whatsapp"></i>
+                    <span>Follow Now</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <nav class="bottom-nav" style="
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-around;
+    padding: 0.5rem 0.25rem;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    background: rgba(var(--card-bg-rgb), 0.95);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+">
+    <a href="index.html" class="nav-item active" style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0.375rem 0.5rem;
+        border-radius: var(--radius-md);
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        flex: 1;
+        max-width: 90px;
+        position: relative;
+        overflow: hidden;
+        min-width: 70px;
+    ">
+        <i class="fas fa-download nav-icon" style="
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+            transition: transform var(--transition-fast);
+        "></i>
+        <span class="nav-label" style="
+            font-size: 0.7rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        ">WhatsDP</span>
+        <div style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 0 0 2px 2px;
+            transform: scaleX(0);
+            transition: transform var(--transition-fast);
+        " class="active-indicator"></div>
+    </a>
+    
+    <a href="wa.html" class="nav-item" style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0.375rem 0.5rem;
+        border-radius: var(--radius-md);
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        flex: 1;
+        max-width: 90px;
+        position: relative;
+        overflow: hidden;
+        min-width: 70px;
+    ">
+        <i class="fas fa-link nav-icon" style="
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+            transition: transform var(--transition-fast);
+        "></i>
+        <span class="nav-label" style="
+            font-size: 0.7rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        ">WalinkGO</span>
+        <div style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 0 0 2px 2px;
+            transform: scaleX(0);
+            transition: transform var(--transition-fast);
+        " class="active-indicator"></div>
+    </a>
+    
+    <a href="wp.html" class="nav-item" style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0.375rem 0.5rem;
+        border-radius: var(--radius-md);
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        flex: 1;
+        max-width: 90px;
+        position: relative;
+        overflow: hidden;
+        min-width: 70px;
+    ">
+        <i class="fas fa-quote-left nav-icon" style="
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+            transition: transform var(--transition-fast);
+        "></i>
+        <span class="nav-label" style="
+            font-size: 0.7rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        ">WhatsPOST</span>
+        <div style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 0 0 2px 2px;
+            transform: scaleX(0);
+            transition: transform var(--transition-fast);
+        " class="active-indicator"></div>
+    </a>
+    
+    <a href="sim.html" class="nav-item" style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0.375rem 0.5rem;
+        border-radius: var(--radius-md);
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        flex: 1;
+        max-width: 90px;
+        position: relative;
+        overflow: hidden;
+        min-width: 70px;
+    ">
+        <i class="fas fa-palette nav-icon" style="
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+            transition: transform var(--transition-fast);
+        "></i>
+        <span class="nav-label" style="
+            font-size: 0.7rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        ">WhatsS.I.M</span>
+        <div style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 0 0 2px 2px;
+            transform: scaleX(0);
+            transition: transform var(--transition-fast);
+        " class="active-indicator"></div>
+    </a>
+</nav>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        const navItems = document.querySelectorAll('.nav-item');
+        
+        navItems.forEach(item => {
+            const href = item.getAttribute('href');
+            item.classList.remove('active');
+            if (href === currentPage) {
+                item.classList.add('active');
+                item.style.color = 'var(--primary-color)';
+                item.style.background = 'rgba(37, 211, 102, 0.1)';
+                const indicator = item.querySelector('.active-indicator');
+                if (indicator) {
+                    indicator.style.transform = 'scaleX(1)';
+                }
+            } else {
+                item.style.color = 'var(--text-secondary)';
+                item.style.background = 'transparent';
+                
+                const indicator = item.querySelector('.active-indicator');
+                if (indicator) {
+                    indicator.style.transform = 'scaleX(0)';
+                }
+            }
+            item.addEventListener('mouseenter', function() {
+                if (!this.classList.contains('active')) {
+                    this.style.color = 'var(--primary-color)';
+                    this.style.background = 'var(--bg-tertiary)';
+                    this.style.transform = 'translateY(-2px)';
+                    
+                    const icon = this.querySelector('.nav-icon');
+                    if (icon) {
+                        icon.style.transform = 'scale(1.1)';
+                    }
+                }
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                if (!this.classList.contains('active')) {
+                    this.style.color = 'var(--text-secondary)';
+                    this.style.background = 'transparent';
+                    this.style.transform = 'translateY(0)';
+                    
+                    const icon = this.querySelector('.nav-icon');
+                    if (icon) {
+                        icon.style.transform = 'scale(1)';
+                    }
+                }
+            });
+            item.addEventListener('click', function(e) {
+                if (this.href && this.href !== window.location.href) {
+                    e.preventDefault();
+                    this.style.position = 'relative';
+                    const loadingOverlay = document.createElement('div');
+                    loadingOverlay.style.position = 'absolute';
+                    loadingOverlay.style.top = '0';
+                    loadingOverlay.style.left = '0';
+                    loadingOverlay.style.right = '0';
+                    loadingOverlay.style.bottom = '0';
+                    loadingOverlay.style.background = 'rgba(37, 211, 102, 0.1)';
+                    loadingOverlay.style.borderRadius = 'var(--radius-md)';
+                    loadingOverlay.style.display = 'flex';
+                    loadingOverlay.style.alignItems = 'center';
+                    loadingOverlay.style.justifyContent = 'center';
+                    loadingOverlay.innerHTML = '<i class="fas fa-spinner fa-spin" style="color: var(--primary-color);"></i>';
+                    this.appendChild(loadingOverlay);                   
+                    setTimeout(() => {
+                        window.location.href = this.href;
+                    }, 300);
+                }
+            });
+        });
+        function adjustNavForScreenSize() {
+            const navItems = document.querySelectorAll('.nav-item');
+            const navContainer = document.querySelector('.bottom-nav');
+            
+            if (window.innerWidth <= 480) {
+                navItems.forEach(item => {
+                    item.style.padding = '0.25rem 0.375rem';
+                    item.style.minWidth = '65px';
+                    item.style.maxWidth = '75px';
+                    
+                    const icon = item.querySelector('.nav-icon');
+                    if (icon) {
+                        icon.style.fontSize = '1.1rem';
+                        icon.style.marginBottom = '0.2rem';
+                    }
+                    
+                    const label = item.querySelector('.nav-label');
+                    if (label) {
+                        label.style.fontSize = '0.65rem';
+                    }
+                });
+                
+                if (navContainer) {
+                    navContainer.style.padding = '0.375rem 0.125rem';
+                }
+            } else if (window.innerWidth <= 768) {         
+                navItems.forEach(item => {
+                    item.style.padding = '0.375rem 0.5rem';
+                    item.style.minWidth = '70px';
+                    item.style.maxWidth = '85px';
+                    
+                    const icon = item.querySelector('.nav-icon');
+                    if (icon) {
+                        icon.style.fontSize = '1.15rem';
+                        icon.style.marginBottom = '0.25rem';
+                    }
+                    
+                    const label = item.querySelector('.nav-label');
+                    if (label) {
+                        label.style.fontSize = '0.68rem';
+                    }
+                });
+                
+                if (navContainer) {
+                    navContainer.style.padding = '0.5rem 0.25rem';
+                }
+            } else {
+                navItems.forEach(item => {
+                    item.style.padding = '0.5rem 0.625rem';
+                    item.style.minWidth = '75px';
+                    item.style.maxWidth = '95px';
+                    
+                    const icon = item.querySelector('.nav-icon');
+                    if (icon) {
+                        icon.style.fontSize = '1.25rem';
+                        icon.style.marginBottom = '0.3rem';
+                    }
+                    
+                    const label = item.querySelector('.nav-label');
+                    if (label) {
+                        label.style.fontSize = '0.75rem';
+                    }
+                });
+                
+                if (navContainer) {
+                    navContainer.style.padding = '0.75rem 0.5rem';
+                }
+            }
+        }
+        adjustNavForScreenSize();
+        window.addEventListener('resize', adjustNavForScreenSize);
+    });
+</script>
+    
+     <script src="video.js"></script>
+    <script src="script.js"></script>
+    <script src="walink.js"></script>
+  <script src="common.js"></script>
+    <script src="c-s.js"></script>    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            navItems.forEach(item => {
+                const href = item.getAttribute('href');
+                if (href === currentPage) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+            navItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    if (this.href && this.href !== window.location.href) {
+                        e.preventDefault();                        
+                        this.classList.add('loading');                        
+                        const loader = document.createElement('div');
+                        loader.className = 'nav-loading';
+                        loader.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                        this.appendChild(loader);
+                        setTimeout(() => {
+                            window.location.href = this.href;
+                        }, 300);
+                    }
+                });
+            });
+            
+            const gateLoaderText = document.querySelector('.loader-text');
+            if (gateLoaderText) {
+                const pageTitles = {
+                    'index.html': 'DP Downloader',
+                    'wa.html': 'WalinkGO',
+                    'wp.html': 'WhatsPOST',
+                    'sim.html': 'WhatsS.I.M'
+                };
+                const pageTitle = pageTitles[currentPage] || 'Premium Tool';
+                gateLoaderText.textContent = `Loading ${pageTitle}...`;
+            }
+        });
+    </script>
+</body>
+</html>

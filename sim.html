@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsS.I.M - Status Image Maker</title>
+    <meta name="description" content="Premium WhatsApp Status Image Maker with Templates">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="sim.css">
+    <link rel="stylesheet" href="video.css">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎨</text></svg>"> 
+    <link rel="icon" type="image/x-icon" href="/favicon3.ico">
+    <meta property="og:image" content="https://whats-dp.vercel.app/favicon3.ico" />
+    <meta name="twitter:image" content="https://whats-dp.vercel.app/favicon3.ico" />
+            
+    <style>
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            padding: 0.75rem 0.5rem;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            background: rgba(var(--card-bg-rgb), 0.95);
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all var(--transition-fast);
+            flex: 1;
+            max-width: 120px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-item:hover {
+            color: var(--primary-color);
+            background: var(--bg-tertiary);
+            transform: translateY(-2px);
+        }
+        
+        .nav-item.active {
+            color: var(--primary-color);
+            background: rgba(37, 211, 102, 0.1);
+        }
+        
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 0 0 2px 2px;
+        }
+        
+        .nav-icon {
+            font-size: 1.25rem;
+            margin-bottom: 0.25rem;
+            transition: transform var(--transition-fast);
+        }
+        
+        .nav-item:hover .nav-icon {
+            transform: scale(1.1);
+        }
+        
+        .nav-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        
+        .nav-item.active .nav-label {
+            font-weight: 600;
+        }
+        
+        .nav-badge {
+            position: absolute;
+            top: 4px;
+            right: 8px;
+            background: #ff4757;
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 0.1rem 0.3rem;
+            border-radius: 10px;
+            border: 2px solid var(--card-bg);
+            min-width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @media (max-width: 768px) {
+            .bottom-nav {
+                padding: 0.5rem;
+            }
+            
+            .nav-item {
+                padding: 0.375rem;
+                min-width: 60px;
+            }
+            
+            .nav-icon {
+                font-size: 1.1rem;
+                margin-bottom: 0.125rem;
+            }
+            
+            .nav-label {
+                font-size: 0.7rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .bottom-nav {
+                padding: 0.375rem;
+            }
+            
+            .nav-label {
+                display: none;
+            }
+            
+            .nav-icon {
+                margin-bottom: 0;
+                font-size: 1.2rem;
+            }
+            
+            .nav-item {
+                min-width: 50px;
+            }
+        }
+        
+        .main-content {
+            padding-bottom: 80px;
+        }
+        .page-transition {
+            animation: pageFadeIn 0.3s ease;
+        }
+        
+        @keyframes pageFadeIn {
+            from { opacity: 0.8; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="gate-loader" id="gateLoader">
+        <div class="gate-loader-content">
+            <div class="loader-logo">
+                <i class="fab fa-whatsapp"></i>
+                <span>WhatsS.I.M</span>
+            </div>
+            <div class="loader-progress">
+                <div class="progress-bar"></div>
+            </div>
+            <p class="loader-text">Loading WhatsS.I.M...</p>
+        </div>
+    </div>
+
+    <div class="container" id="mainContainer">
+        <header class="main-header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fab fa-whatsapp"></i>
+                    <h1>Whats<span class="logo-accent">S.I.M</span></h1>
+                </div>
+                
+                <div class="header-controls">
+                    <div class="theme-toggle">
+                        <input type="checkbox" id="themeSwitch" class="theme-checkbox">
+                        <label for="themeSwitch" class="theme-label">
+                            <i class="fas fa-sun"></i>
+                            <i class="fas fa-moon"></i>
+                            <span class="theme-ball"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </header>
+      
+<div class="video-player-section">
+    <div class="video-header">
+        <div class="video-title-container">
+            <i class="fas fa-play-circle"></i>
+            <h2>Featured Content</h2>
+            <span class="video-badge">Premium</span>
+        </div>
+        <div class="video-controls-header">
+            <button class="btn-video-control" id="prevVideo" title="Previous video">
+                <i class="fas fa-step-backward"></i>
+            </button>
+            <button class="btn-video-control" id="nextVideo" title="Next video">
+                <i class="fas fa-step-forward"></i>
+            </button>
+            <button class="btn-video-control" id="shuffleVideos" title="Shuffle videos">
+                <i class="fas fa-random"></i>
+            </button>
+        </div>
+    </div>
+    
+    <div class="video-player-wrapper">
+        <div class="video-glow"></div>
+        <div class="video-container" id="videoContainer">
+            <div class="video-skeleton" id="videoSkeleton">
+                <div class="skeleton-shimmer"></div>
+                <div class="skeleton-placeholder">
+                    <i class="fas fa-play-circle"></i>
+                    <p>Loading premium content...</p>
+                </div>
+            </div>
+            <div class="youtube-container" id="youtubeContainer"></div>            
+            <video class="native-video" id="nativeVideo" playsinline webkit-playsinline>
+                Your browser does not support the video tag.
+            </video>
+            <div class="video-overlay" id="videoOverlay">
+                <button class="play-pause-btn" id="playPauseBtn">
+                    <i class="fas fa-play"></i>
+                </button>
+                <button class="mute-btn" id="muteBtn">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+                <div class="video-progress" id="videoProgress">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <div class="video-time" id="videoTime">0:00 / 0:00</div>
+            </div>
+        </div>
+        <div class="video-source-selector">
+            <div class="source-buttons">
+                <button class="source-btn active" data-source="direct">
+                    <i class="fas fa-film"></i>
+                    <span>Direct Videos</span>
+                </button>
+                <button class="source-btn" data-source="youtube">
+                    <i class="fab fa-youtube"></i>
+                    <span>YouTube</span>
+                </button>
+                <button class="source-btn" data-source="mixed">
+                    <i class="fas fa-random"></i>
+                    <span>Mixed Playlist</span>
+                </button>
+            </div>
+            <div class="current-video-info">
+                <i class="fas fa-info-circle"></i>
+                <span id="currentVideoInfo">Loading playlist...</span>
+            </div>
+        </div>
+    </div>
+</div>     
+
+        <main class="app-main main-content page-transition">
+            <section class="whatssim-section" id="whatssimSection">
+                <div class="card input-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-palette" style="color: var(--primary-color);"></i> <span class="logo-accent">WhatsS.I.M+</span> Premium Status Image Maker</h2>
+                        <p class="card-subtitle">Create stunning WhatsApp status images with premium templates</p>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="sim-interface">
+                            <div class="sim-controls">
+                                <div class="control-group">
+                                    <div class="control-header">
+                                        <i class="fas fa-expand-alt"></i>
+                                        <span>Image Size</span>
+                                    </div>
+                                    <div class="size-presets" id="sizePresets">
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <div class="control-header">
+                                        <i class="fas fa-font"></i>
+                                        <span>Status Text</span>
+                                        <div class="char-counter" id="simCharCounter">0/500</div>
+                                    </div>
+                                    <textarea 
+                                        id="simTextInput" 
+                                        placeholder="Type your status text here.....You can add emojis too😊"
+                                        rows="3"
+                                        maxlength="500"
+                                        aria-label="Status text"
+                                        class="sim-text-input"
+                                    ></textarea>
+                                    <div class="input-hint">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span>Text will appear on canvas after clicking Generate Image</span>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <div class="control-header">
+                                        <i class="fas fa-text-height"></i>
+                                        <span>Font Style</span>
+                                    </div>
+                                    <div class="font-presets" id="fontPresets">
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <div class="control-header">
+                                        <i class="fas fa-fill-drip"></i>
+                                        <span>Background</span>
+                                    </div>
+                                    <div class="color-presets" id="colorPresets">
+                                    </div>
+                                    <div class="custom-color">
+                                        <label for="customColorPicker">
+                                            <i class="fas fa-eyedropper"></i>
+                                            <span>Custom Color</span>
+                                        </label>
+                                        <input type="color" id="customColorPicker" value="#25D366">
+                                        <button class="btn-icon-sm" id="applyCustomColor" aria-label="Apply custom color">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <div class="control-header">
+                                        <i class="fas fa-smile"></i>
+                                        <span>Emoji & Stickers</span>
+                                        <span class="control-badge">Premium</span>
+                                    </div>
+                                    <div class="emoji-section">
+                                        <div class="emoji-category">
+                                            <button class="emoji-tab active" data-category="emojis">
+                                                <i class="fas fa-smile"></i>
+                                                <span>Emojis</span>
+                                            </button>
+                                            <button class="emoji-tab" data-category="stickers">
+                                                <i class="fas fa-sticky-note"></i>
+                                                <span>Stickers</span>
+                                            </button>
+                                            <button class="emoji-tab" data-category="shapes">
+                                                <i class="fas fa-shapes"></i>
+                                                <span>Shapes</span>
+                                            </button>
+                                        </div>
+                                        <div class="emoji-container" id="emojiContainer">
+                                        </div>
+                                        <div class="emoji-hint">
+                                            <i class="fas fa-mouse-pointer"></i>
+                                            <span>Click to add, drag to position on canvas</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <div class="control-header">
+                                        <i class="fas fa-sliders-h"></i>
+                                        <span>Advanced Options</span>
+                                    </div>
+                                    <div class="advanced-options">
+                                        <div class="option-row">
+                                            <label class="option-label">
+                                                <input type="checkbox" id="textShadowToggle" checked>
+                                                <span class="option-checkbox"></span>
+                                                <i class="fas fa-text-shadow"></i>
+                                                <span>Text Shadow</span>
+                                            </label>
+                                            <label class="option-label">
+                                                <input type="checkbox" id="watermarkToggle" checked>
+                                                <span class="option-checkbox"></span>
+                                                <i class="fas fa-copyright"></i>
+                                                <span>Watermark</span>
+                                            </label>
+                                        </div>
+                                        <div class="option-row">
+                                            <label class="option-label">
+                                                <input type="checkbox" id="safeAreaToggle">
+                                                <span class="option-checkbox"></span>
+                                                <i class="fas fa-crop"></i>
+                                                <span>Safe Area Guides</span>
+                                            </label>
+                                            <label class="option-label">
+                                                <input type="checkbox" id="autoResizeToggle" checked>
+                                                <span class="option-checkbox"></span>
+                                                <i class="fas fa-expand-alt"></i>
+                                                <span>Auto Resize Text</span>
+                                            </label>
+                                        </div>
+                                        <div class="option-row">
+                                            <div class="slider-container">
+                                                <label for="opacitySlider">
+                                                    <i class="fas fa-adjust"></i>
+                                                    <span>Opacity: <span id="opacityValue">100%</span></span>
+                                                </label>
+                                                <input type="range" id="opacitySlider" min="10" max="100" value="100">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="generate-container">
+                                    <button class="btn-primary btn-generate-image" id="generateImageBtn">
+                                        <span class="btn-text">Generate Status Image</span>
+                                        <span class="btn-loader">
+                                            <div class="spinner"></div>
+                                        </span>
+                                        <i class="fas fa-bolt btn-icon-right"></i>
+                                    </button>
+                                    <div class="api-info">
+                                        <i class="fas fa-shield-alt"></i>
+                                        <span>100% client-side processing · No data sent to servers</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="sim-preview">
+                                <div class="preview-header">
+                                    <h3><i class="fas fa-eye"></i> Image Preview</h3>
+                                    <div class="size-display" id="sizeDisplay">1080×1920 (9:16)</div>
+                                    <div class="preview-actions">
+                                        <button class="btn-icon-sm" id="zoomPreviewBtn" aria-label="Zoom preview">
+                                            <i class="fas fa-search-plus"></i>
+                                        </button>
+                                        <button class="btn-icon-sm" id="resetPreviewBtn" aria-label="Reset preview">
+                                            <i class="fas fa-redo"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="canvas-container">
+                                    <div class="canvas-wrapper">
+                                        <canvas id="simCanvas" width="1080" height="1920"></canvas>
+                                        <div class="canvas-overlay" id="safeAreaOverlay" style="display: none;">
+                                            <div class="safe-area-guide"></div>
+                                        </div>
+                                        <div class="canvas-placeholder active" id="canvasPlaceholder">
+                                            <i class="fas fa-image"></i>
+                                            <h4>No Image Generated Yet</h4>
+                                            <p>Configure your settings and click "Generate Status Image" to preview</p>
+                                        </div>
+                                    </div>
+                                    <div class="canvas-meta">
+                                        <span><i class="fas fa-ruler-combined"></i> <span id="canvasDimensions">1080×1920</span></span>
+                                        <span><i class="fas fa-download"></i> PNG Ready</span>
+                                        <span><i class="fas fa-whatsapp"></i> <span id="platformName">WhatsApp</span></span>
+                                    </div>
+                                </div>
+                                <div class="export-controls">
+                                    <div class="export-format">
+                                        <span>Export as:</span>
+                                        <div class="format-options">
+                                            <label class="format-option">
+                                                <input type="radio" name="exportFormat" value="png" checked>
+                                                <span>PNG (HQ)</span>
+                                            </label>
+                                            <label class="format-option">
+                                                <input type="radio" name="exportFormat" value="jpg">
+                                                <span>JPG</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="export-actions">
+                                        <button class="btn-secondary" id="downloadBtn" disabled>
+                                            <i class="fas fa-download"></i>
+                                            <span>Download</span>
+                                        </button>
+                                        <button class="btn-secondary" id="shareBtn" disabled>
+                                            <i class="fas fa-share-alt"></i>
+                                            <span>Share</span>
+                                        </button>
+                                        <button class="btn-secondary" id="saveTemplateBtn" disabled>
+                                            <i class="fas fa-save"></i>
+                                            <span>Save Template</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <h3><i class="fas fa-chart-line" style="color: var(--primary-color);"></i> WhatsS.I.M+ Statistics</h3>
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <div class="stat-value" id="totalImagesGenerated">0</div>
+                                <div class="stat-label">Images Generated</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value" id="totalDownloads">0</div>
+                                <div class="stat-label">Downloads</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value" id="successRateSim">100%</div>
+                                <div class="stat-label">Success Rate</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card history-card">
+                    <div class="card-header history-header">
+                        <h3><i class="fas fa-history" style="color: var(--primary-color);"></i> Generated Images History</h3>
+                        <div class="history-header-actions">
+                            <button class="btn-icon-sm" id="toggleSimHistoryView" aria-label="Toggle view">
+                                <i class="fas fa-th"></i>
+                            </button>
+                            <button class="btn-icon-sm" id="clearSimHistoryBtn" aria-label="Clear history">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body history-body">
+                        <div class="history-empty" id="simHistoryEmpty">
+                            <i class="fas fa-images"></i>
+                            <p>No generated images yet</p>
+                            <p class="small-text">Create your first status image</p>
+                        </div>
+                        
+                        <div class="history-grid" id="simHistoryGrid">
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="main-footer">
+            <div class="footer-content">
+                <p>© TECH LYFE TEAM - 2026 All rigth reserved</p>
+                <p class="footer-links">
+                    <span>WhatsS.I.M+ · Status Image Maker</span>
+                    <span class="footer-separator">|</span>
+                    <span>Secure · Fast · Reliable</span>
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <nav class="bottom-nav" style="
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-around;
+    padding: 0.5rem 0.25rem;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    background: rgba(var(--card-bg-rgb), 0.95);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+">
+    <a href="index.html" class="nav-item active" style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0.375rem 0.5rem;
+        border-radius: var(--radius-md);
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        flex: 1;
+        max-width: 90px;
+        position: relative;
+        overflow: hidden;
+        min-width: 70px;
+    ">
+        <i class="fas fa-download nav-icon" style="
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+            transition: transform var(--transition-fast);
+        "></i>
+        <span class="nav-label" style="
+            font-size: 0.7rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        ">WhatsDP</span>
+        <div style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 0 0 2px 2px;
+            transform: scaleX(0);
+            transition: transform var(--transition-fast);
+        " class="active-indicator"></div>
+    </a>
+    
+    <a href="wa.html" class="nav-item" style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0.375rem 0.5rem;
+        border-radius: var(--radius-md);
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        flex: 1;
+        max-width: 90px;
+        position: relative;
+        overflow: hidden;
+        min-width: 70px;
+    ">
+        <i class="fas fa-link nav-icon" style="
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+            transition: transform var(--transition-fast);
+        "></i>
+        <span class="nav-label" style="
+            font-size: 0.7rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        ">WalinkGO</span>
+        <div style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 0 0 2px 2px;
+            transform: scaleX(0);
+            transition: transform var(--transition-fast);
+        " class="active-indicator"></div>
+    </a>
+    
+    <a href="wp.html" class="nav-item" style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0.375rem 0.5rem;
+        border-radius: var(--radius-md);
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        flex: 1;
+        max-width: 90px;
+        position: relative;
+        overflow: hidden;
+        min-width: 70px;
+    ">
+        <i class="fas fa-quote-left nav-icon" style="
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+            transition: transform var(--transition-fast);
+        "></i>
+        <span class="nav-label" style="
+            font-size: 0.7rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        ">WhatsPOST</span>
+        <div style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 0 0 2px 2px;
+            transform: scaleX(0);
+            transition: transform var(--transition-fast);
+        " class="active-indicator"></div>
+    </a>
+    
+    <a href="sim.html" class="nav-item" style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0.375rem 0.5rem;
+        border-radius: var(--radius-md);
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        flex: 1;
+        max-width: 90px;
+        position: relative;
+        overflow: hidden;
+        min-width: 70px;
+    ">
+        <i class="fas fa-palette nav-icon" style="
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+            transition: transform var(--transition-fast);
+        "></i>
+        <span class="nav-label" style="
+            font-size: 0.7rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        ">WhatsS.I.M</span>
+        <div style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 0 0 2px 2px;
+            transform: scaleX(0);
+            transition: transform var(--transition-fast);
+        " class="active-indicator"></div>
+    </a>
+</nav>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        const navItems = document.querySelectorAll('.nav-item');
+        
+        navItems.forEach(item => {
+            const href = item.getAttribute('href');
+            item.classList.remove('active');
+            if (href === currentPage) {
+                item.classList.add('active');
+                item.style.color = 'var(--primary-color)';
+                item.style.background = 'rgba(37, 211, 102, 0.1)';
+                const indicator = item.querySelector('.active-indicator');
+                if (indicator) {
+                    indicator.style.transform = 'scaleX(1)';
+                }
+            } else {
+                item.style.color = 'var(--text-secondary)';
+                item.style.background = 'transparent';
+                const indicator = item.querySelector('.active-indicator');
+                if (indicator) {
+                    indicator.style.transform = 'scaleX(0)';
+                }
+            }
+            item.addEventListener('mouseenter', function() {
+                if (!this.classList.contains('active')) {
+                    this.style.color = 'var(--primary-color)';
+                    this.style.background = 'var(--bg-tertiary)';
+                    this.style.transform = 'translateY(-2px)';
+                    
+                    const icon = this.querySelector('.nav-icon');
+                    if (icon) {
+                        icon.style.transform = 'scale(1.1)';
+                    }
+                }
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                if (!this.classList.contains('active')) {
+                    this.style.color = 'var(--text-secondary)';
+                    this.style.background = 'transparent';
+                    this.style.transform = 'translateY(0)';
+                    
+                    const icon = this.querySelector('.nav-icon');
+                    if (icon) {
+                        icon.style.transform = 'scale(1)';
+                    }
+                }
+            });
+            item.addEventListener('click', function(e) {
+                if (this.href && this.href !== window.location.href) {
+                    e.preventDefault();
+                    this.style.position = 'relative';
+                    const loadingOverlay = document.createElement('div');
+                    loadingOverlay.style.position = 'absolute';
+                    loadingOverlay.style.top = '0';
+                    loadingOverlay.style.left = '0';
+                    loadingOverlay.style.right = '0';
+                    loadingOverlay.style.bottom = '0';
+                    loadingOverlay.style.background = 'rgba(37, 211, 102, 0.1)';
+                    loadingOverlay.style.borderRadius = 'var(--radius-md)';
+                    loadingOverlay.style.display = 'flex';
+                    loadingOverlay.style.alignItems = 'center';
+                    loadingOverlay.style.justifyContent = 'center';
+                    loadingOverlay.innerHTML = '<i class="fas fa-spinner fa-spin" style="color: var(--primary-color);"></i>';
+                    this.appendChild(loadingOverlay);
+                    setTimeout(() => {
+                        window.location.href = this.href;
+                    }, 300);
+                }
+            });
+        });
+        function adjustNavForScreenSize() {
+            const navItems = document.querySelectorAll('.nav-item');
+            const navContainer = document.querySelector('.bottom-nav');
+            
+            if (window.innerWidth <= 480) {
+                navItems.forEach(item => {
+                    item.style.padding = '0.25rem 0.375rem';
+                    item.style.minWidth = '65px';
+                    item.style.maxWidth = '75px';
+                    
+                    const icon = item.querySelector('.nav-icon');
+                    if (icon) {
+                        icon.style.fontSize = '1.1rem';
+                        icon.style.marginBottom = '0.2rem';
+                    }
+                    
+                    const label = item.querySelector('.nav-label');
+                    if (label) {
+                        label.style.fontSize = '0.65rem';
+                    }
+                });
+                
+                if (navContainer) {
+                    navContainer.style.padding = '0.375rem 0.125rem';
+                }
+            } else if (window.innerWidth <= 768) {
+                navItems.forEach(item => {
+                    item.style.padding = '0.375rem 0.5rem';
+                    item.style.minWidth = '70px';
+                    item.style.maxWidth = '85px';
+                    
+                    const icon = item.querySelector('.nav-icon');
+                    if (icon) {
+                        icon.style.fontSize = '1.15rem';
+                        icon.style.marginBottom = '0.25rem';
+                    }
+                    
+                    const label = item.querySelector('.nav-label');
+                    if (label) {
+                        label.style.fontSize = '0.68rem';
+                    }
+                });
+                
+                if (navContainer) {
+                    navContainer.style.padding = '0.5rem 0.25rem';
+                }
+            } else {
+                navItems.forEach(item => {
+                    item.style.padding = '0.5rem 0.625rem';
+                    item.style.minWidth = '75px';
+                    item.style.maxWidth = '95px';
+                    
+                    const icon = item.querySelector('.nav-icon');
+                    if (icon) {
+                        icon.style.fontSize = '1.25rem';
+                        icon.style.marginBottom = '0.3rem';
+                    }
+                    
+                    const label = item.querySelector('.nav-label');
+                    if (label) {
+                        label.style.fontSize = '0.75rem';
+                    }
+                });
+                
+                if (navContainer) {
+                    navContainer.style.padding = '0.75rem 0.5rem';
+                }
+            }
+        }
+        adjustNavForScreenSize();
+        window.addEventListener('resize', adjustNavForScreenSize);
+    });
+</script>
+    <script src="script.js"></script>
+    <script src="sim.js"></script>
+   <script src="video.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            navItems.forEach(item => {
+                const href = item.getAttribute('href');
+                if (href === currentPage) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+            navItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    if (this.href && this.href !== window.location.href) {
+                        e.preventDefault();
+                        this.classList.add('loading');
+                        const loader = document.createElement('div');
+                        loader.className = 'nav-loading';
+                        loader.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                        this.appendChild(loader);
+                        setTimeout(() => {
+                            window.location.href = this.href;
+                        }, 300);
+                    }
+                });
+            });
+            const gateLoaderText = document.querySelector('.loader-text');
+            if (gateLoaderText) {
+                const pageTitles = {
+                    'index.html': 'DP Downloader',
+                    'wa.html': 'WalinkGO',
+                    'wp.html': 'WhatsPOST',
+                    'sim.html': 'WhatsS.I.M'
+                };
+                const pageTitle = pageTitles[currentPage] || 'Premium Tool';
+                gateLoaderText.textContent = `Loading ${pageTitle}...`;
+            }
+        });
+    </script>
+</body>
+</html>

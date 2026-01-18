@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsHUB+ - Premium WhatsApp Tool</title>
+    <meta name="description" content="Premium WhatsApp Profile Picture Downloader">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+     <link rel="stylesheet" href="video.css">
+    <link rel="stylesheet" href="video.css">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📱</text></svg>">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <meta property="og:image" content="https://whats-dp.vercel.app/favicon.ico" />
+    <meta name="twitter:image" content="https://whats-dp.vercel.app/favicon.ico" />
+    
+    <style>
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            padding: 0.75rem 0.5rem;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            background: rgba(var(--card-bg-rgb), 0.95);
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all var(--transition-fast);
+            flex: 1;
+            max-width: 120px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-item:hover {
+            color: var(--primary-color);
+            background: var(--bg-tertiary);
+            transform: translateY(-2px);
+        }
+        
+        .nav-item.active {
+            color: var(--primary-color);
+            background: rgba(37, 211, 102, 0.1);
+        }
+        
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 0 0 2px 2px;
+        }
+        
+        .nav-icon {
+            font-size: 1.25rem;
+            margin-bottom: 0.25rem;
+            transition: transform var(--transition-fast);
+        }
+        
+        .nav-item:hover .nav-icon {
+            transform: scale(1.1);
+        }
+        
+        .nav-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        
+        .nav-item.active .nav-label {
+            font-weight: 600;
+        }
+        
+        .nav-badge {
+            position: absolute;
+            top: 4px;
+            right: 8px;
+            background: #ff4757;
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 0.1rem 0.3rem;
+            border-radius: 10px;
+            border: 2px solid var(--card-bg);
+            min-width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @media (max-width: 768px) {
+            .bottom-nav {
+                padding: 0.5rem;
+            }
+            
+            .nav-item {
+                padding: 0.375rem;
+                min-width: 60px;
+            }
+            
+            .nav-icon {
+                font-size: 1.1rem;
+                margin-bottom: 0.125rem;
+            }
+            
+            .nav-label {
+                font-size: 0.7rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .bottom-nav {
+                padding: 0.375rem;
+            }
+            
+            .nav-label {
+                display: none;
+            }
+            
+            .nav-icon {
+                margin-bottom: 0;
+                font-size: 1.2rem;
+            }
+            
+            .nav-item {
+                min-width: 50px;
+            }
+        }
+        
+        .main-content {
+            padding-bottom: 80px;
+        }
+    </style>
+</head>
+<body>
+    <div class="gate-loader" id="gateLoader">
+        <div class="gate-loader-content">
+            <div class="loader-logo">
+                <i class="fab fa-whatsapp"></i>
+                <span>WhatsHUB+</span>
+            </div>
+            <div class="loader-progress">
+                <div class="progress-bar"></div>
+            </div>
+            <p class="loader-text">Loading Premium Tools...</p>
+        </div>
+    </div>
+
+    <div class="container" id="mainContainer">
+        <header class="main-header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fab fa-whatsapp"></i>
+                    <h1>WhatsDP<span class="logo-accent">Downloader</span></h1>
+                </div>
+                
+                <div class="header-controls">
+                    <div class="theme-toggle">
+                        <input type="checkbox" id="themeSwitch" class="theme-checkbox">
+                        <label for="themeSwitch" class="theme-label">
+                            <i class="fas fa-sun"></i>
+                            <i class="fas fa-moon"></i>
+                            <span class="theme-ball"></span>
+                        </label>
+                    </div>
+                    
+                    <button class="btn-icon" id="historyToggle" aria-label="View history">
+                        <i class="fas fa-history"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Video Player Container -->
+<div class="video-player-section">
+    <div class="video-header">
+        <div class="video-title-container">
+            <i class="fas fa-play-circle"></i>
+            <h2>Featured Content</h2>
+            <span class="video-badge">Premium</span>
+        </div>
+        <div class="video-controls-header">
+            <button class="btn-video-control" id="prevVideo" title="Previous video">
+                <i class="fas fa-step-backward"></i>
+            </button>
+            <button class="btn-video-control" id="nextVideo" title="Next video">
+                <i class="fas fa-step-forward"></i>
+            </button>
+            <button class="btn-video-control" id="shuffleVideos" title="Shuffle videos">
+                <i class="fas fa-random"></i>
+            </button>
+        </div>
+    </div>
+    
+    <div class="video-player-wrapper">
+        <!-- Simple Glow Effect -->
+        <div class="video-glow"></div>
+        
+        <!-- Video Container -->
+        <div class="video-container" id="videoContainer">
+            <!-- Skeleton Loader -->
+            <div class="video-skeleton" id="videoSkeleton">
+                <div class="skeleton-shimmer"></div>
+                <div class="skeleton-placeholder">
+                    <i class="fas fa-play-circle"></i>
+                    <p>Loading premium content...</p>
+                </div>
+            </div>
+            
+            <!-- YouTube Player Container -->
+            <div class="youtube-container" id="youtubeContainer"></div>
+            
+            <!-- Native Video Player -->
+            <video class="native-video" id="nativeVideo" playsinline webkit-playsinline>
+                Your browser does not support the video tag.
+            </video>
+            
+            <!-- Video Overlay Controls -->
+            <div class="video-overlay" id="videoOverlay">
+                <button class="play-pause-btn" id="playPauseBtn">
+                    <i class="fas fa-play"></i>
+                </button>
+                <button class="mute-btn" id="muteBtn">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+                <div class="video-progress" id="videoProgress">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <div class="video-time" id="videoTime">0:00 / 0:00</div>
+            </div>
+        </div>
+        
+        <!-- Video Source Selector -->
+        <div class="video-source-selector">
+            <div class="source-buttons">
+                <button class="source-btn active" data-source="direct">
+                    <i class="fas fa-film"></i>
+                    <span>Direct Videos</span>
+                </button>
+                <button class="source-btn" data-source="youtube">
+                    <i class="fab fa-youtube"></i>
+                    <span>YouTube</span>
+                </button>
+                <button class="source-btn" data-source="mixed">
+                    <i class="fas fa-random"></i>
+                    <span>Mixed Playlist</span>
+                </button>
+            </div>
+            <div class="current-video-info">
+                <i class="fas fa-info-circle"></i>
+                <span id="currentVideoInfo">Loading playlist...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+        <main class="app-main main-content">
+            <div class="app-grid">               
+                <div class="left-panel">
+                    <div class="card input-card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-mobile-alt"></i> WhatsApp Number Input</h2>
+                            <p class="card-subtitle">Enter a WhatsApp number in international format</p>
+                        </div>
+                        
+                        <div class="card-body">
+                            <div class="input-group">
+                                <div class="input-prefix">
+                                    <i class="fas fa-globe"></i>
+                                    <span>+</span>
+                                </div>
+                                <input 
+                                    type="tel" 
+                                    id="whatsappNumber" 
+                                    placeholder="233XXXXXXXXX"
+                                    pattern="^[0-9]{10,15}$"
+                                    maxlength="15"
+                                    autocomplete="off"
+                                    aria-label="WhatsApp phone number"
+                                >
+                                <div class="input-validation">
+                                    <i class="fas fa-check-circle valid-icon"></i>
+                                    <i class="fas fa-exclamation-circle invalid-icon"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="input-hint">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Format: Country code + number (e.g., 233XXXXXXXXX)</span>
+                            </div>
+                            
+                            <div class="input-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Length:</span>
+                                    <span class="stat-value" id="lengthIndicator">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Format:</span>
+                                    <span class="stat-value" id="formatIndicator">Invalid</span>
+                                </div>
+                            </div>
+                            
+                            <button class="btn-primary btn-fetch" id="fetchButton" disabled>
+                                <span class="btn-text">Fetch Profile Picture</span>
+                                <span class="btn-loader">
+                                    <div class="spinner"></div>
+                                </span>
+                                <i class="fas fa-download btn-icon-right"></i>
+                            </button>
+                            
+                            <div class="api-info">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Secure System endpoint · No data stored on our servers</span>
+                            </div>
+                        </div>
+                    </div>              
+                    <div class="card history-card" id="historyCard">
+                        <div class="card-header history-header">
+                            <h3><i class="fas fa-history"></i> Previous Fetches</h3>
+                            <button class="btn-icon-sm" id="clearHistoryBtn" aria-label="Clear history">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="card-body history-body">
+                            <div class="history-empty" id="historyEmpty">
+                                <i class="fas fa-images"></i>
+                                <p>No previous fetches yet</p>
+                            </div>
+                            
+                            <div class="history-grid" id="historyGrid">                         
+                            </div>
+                        </div>
+                    </div>
+                </div>               
+                <div class="right-panel">
+                    <div class="card preview-card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-image"></i> Profile Picture Preview</h2>
+                            <p class="card-subtitle">Preview and download the WhatsApp profile picture</p>
+                        </div>
+                        
+                        <div class="card-body preview-body">                           
+                            <div class="preview-placeholder" id="previewPlaceholder">
+                                <div class="placeholder-icon">
+                                    <i class="fab fa-whatsapp"></i>
+                                </div>
+                                <h3>No Profile Picture Loaded</h3>
+                                <p>Enter a WhatsApp number and click "Fetch Profile Picture" to preview the DP</p>
+                            </div>                           
+                            <div class="preview-loading" id="previewLoading">
+                                <div class="loading-spinner">
+                                    <div class="spinner-ring"></div>
+                                </div>
+                                <p>Fetching profile picture...</p>
+                            </div>                            
+                            <div class="preview-active" id="previewActive">
+                                <div class="preview-header">
+                                    <div class="preview-meta">
+                                        <div class="meta-number">
+                                            <i class="fas fa-phone-alt"></i>
+                                            <span id="previewNumber">+233XXXXXXXXX</span>
+                                        </div>
+                                        <div class="meta-time">
+                                            <i class="fas fa-clock"></i>
+                                            <span id="previewTime">Just now</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="preview-actions">
+                                        <button class="btn-icon-sm" id="zoomButton" aria-label="Zoom image">
+                                            <i class="fas fa-search-plus"></i>
+                                        </button>
+                                        <button class="btn-icon-sm" id="refreshButton" aria-label="Refresh preview">
+                                            <i class="fas fa-redo"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="preview-image-container">
+                                    <img id="previewImage" src="" alt="WhatsApp Profile Picture" crossorigin="anonymous">
+                                    <div class="image-overlay">
+                                        <button class="btn-download-overlay" id="downloadButton">
+                                            <i class="fas fa-download"></i>
+                                            <span>Download</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="preview-controls">
+                                    <div class="format-selector">
+                                        <span>Download as:</span>
+                                        <div class="format-options">
+                                            <label class="format-option">
+                                                <input type="radio" name="format" value="jpg" checked>
+                                                <span>JPG</span>
+                                            </label>
+                                            <label class="format-option">
+                                                <input type="radio" name="format" value="png">
+                                                <span>PNG</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <button class="btn-secondary" id="shareButton">
+                                        <i class="fas fa-share-alt"></i>
+                                        <span>Share</span>
+                                    </button>
+                                </div>
+                            </div>                            
+                            <div class="preview-error" id="previewError">
+                                <div class="error-icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <h3 id="errorTitle">Unable to Fetch Profile Picture</h3>
+                                <p id="errorMessage">The WhatsApp number may be invalid or the profile picture is not available.</p>
+                                <button class="btn-secondary" id="retryButton">
+                                    <i class="fas fa-redo"></i>
+                                    <span>Try Again</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>                   
+                    <div class="card stats-card">
+                        <div class="card-body">
+                            <h3><i class="fas fa-chart-line"></i> Statistics</h3>
+                            <div class="stats-grid">
+                                <div class="stat-box">
+                                    <div class="stat-value" id="totalFetches">0</div>
+                                    <div class="stat-label">Total Fetches</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-value" id="successRate">100%</div>
+                                    <div class="stat-label">Success Rate</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-value" id="storageUsed">0 KB</div>
+                                    <div class="stat-label">Storage Used</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="main-footer">
+            <div class="footer-content">
+                <p>© TECH LYFE TEAM - 2026 All rigth reserved</p>
+                <p class="footer-links">
+                    <span>WhatsDP Premium · WhatsApp Tool</span>
+                    <span class="footer-separator">|</span>
+                    <span>Secure · Fast · Reliable</span>
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <div class="modal" id="imageModal">
+        <div class="modal-overlay" id="modalOverlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Profile Picture Preview</h3>
+                <button class="btn-icon-sm modal-close" id="modalClose" aria-label="Close modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <img id="modalImage" src="" alt="Zoomed WhatsApp Profile Picture">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" id="modalDownload">
+                    <i class="fas fa-download"></i>
+                    <span>Download Image</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="countryModal">
+        <div class="modal-overlay" id="countryModalOverlay"></div>
+        <div class="modal-content country-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-globe-americas"></i> Select Country Code</h3>
+                <button class="btn-icon-sm modal-close" id="countryModalClose" aria-label="Close modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="country-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="countrySearch" placeholder="Search countries..." autocomplete="off">
+                    <button class="btn-icon-sm" id="clearSearch" aria-label="Clear search">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="country-list-container">
+                    <div class="country-list" id="countryList">                 
+                    </div>
+                </div>
+                
+                <div class="add-country-section">
+                    <button class="btn-secondary btn-add-country" id="addCountryBtn">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Add Custom Country</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="addCountryModal">
+        <div class="modal-overlay" id="addCountryModalOverlay"></div>
+        <div class="modal-content add-country-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> Add Custom Country</h3>
+                <button class="btn-icon-sm modal-close" id="addCountryModalClose" aria-label="Close modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="customCountryName">
+                        <i class="fas fa-flag"></i> Country Name
+                    </label>
+                    <input type="text" id="customCountryName" placeholder="e.g., United States" autocomplete="off">
+                    <div class="form-error" id="countryNameError"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customCountryCode">
+                        <i class="fas fa-hashtag"></i> Country Code
+                    </label>
+                    <div class="input-with-prefix">
+                        <span class="prefix">+</span>
+                        <input type="text" id="customCountryCode" placeholder="1" maxlength="5" autocomplete="off">
+                    </div>
+                    <div class="form-error" id="countryCodeError"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customCountryFlag">
+                        <i class="fas fa-image"></i> Flag Emoji (Optional)
+                    </label>
+                    <input type="text" id="customCountryFlag" placeholder="🇺🇸" maxlength="4" autocomplete="off">
+                    <div class="flag-preview" id="flagPreview"></div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancelAddCountry">
+                    <i class="fas fa-times"></i>
+                    <span>Cancel</span>
+                </button>
+                <button class="btn-primary" id="saveCountryBtn">
+                    <i class="fas fa-save"></i>
+                    <span>Save Country</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="followPopup">
+        <div class="modal-overlay" id="followPopupOverlay"></div>
+        <div class="modal-content follow-popup">
+            <div class="modal-header">
+                <h3><i class="fab fa-whatsapp"></i> Stay Connected!</h3>
+                <button class="btn-icon-sm modal-close" id="followPopupClose" aria-label="Close popup">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="follow-content">
+                    <div class="follow-icon">
+                        <i class="fab fa-whatsapp"></i>
+                        <div class="follow-badge">New</div>
+                    </div>
+                    
+                    <h4>Join Our WhatsApp Channel</h4>
+                    <p class="follow-description">
+                        Get instant updates, new features, and exclusive WhatsApp tips directly in your WhatsApp.
+                        Be the first to know about updates!
+                    </p>
+                    
+                    <div class="follow-features">
+                        <div class="feature-item">
+                            <i class="fas fa-bolt"></i>
+                            <span>Instant Updates</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-star"></i>
+                            <span>Exclusive Tips</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Privacy Focused</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-gift"></i>
+                            <span>Free Resources</span>
+                        </div>
+                    </div>
+                    
+                    <div class="follow-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">10K+</div>
+                            <div class="stat-label">Members</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">24/7</div>
+                            <div class="stat-label">Updates</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">100%</div>
+                            <div class="stat-label">Free</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-secondary" id="followLaterBtn">
+                    <i class="fas fa-clock"></i>
+                    <span>Maybe Later</span>
+                </button>
+                <button class="btn-primary" id="followNowBtn">
+                    <i class="fab fa-whatsapp"></i>
+                    <span>Follow Now</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+<nav class="bottom-nav" style="
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-around;
+    padding: 0.5rem 0.25rem;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    background: rgba(var(--card-bg-rgb), 0.95);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+">
+    <a href="index.html" class="nav-item active" style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0.375rem 0.5rem;
+        border-radius: var(--radius-md);
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        flex: 1;
+        max-width: 90px;
+        position: relative;
+        overflow: hidden;
+        min-width: 70px;
+    ">
+        <i class="fas fa-download nav-icon" style="
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+            transition: transform var(--transition-fast);
+        "></i>
+        <span class="nav-label" style="
+            font-size: 0.7rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        ">WhatsDP</span>
+        <div style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 0 0 2px 2px;
+            transform: scaleX(0);
+            transition: transform var(--transition-fast);
+        " class="active-indicator"></div>
+    </a>
+    
+    <a href="wa.html" class="nav-item" style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0.375rem 0.5rem;
+        border-radius: var(--radius-md);
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        flex: 1;
+        max-width: 90px;
+        position: relative;
+        overflow: hidden;
+        min-width: 70px;
+    ">
+        <i class="fas fa-link nav-icon" style="
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+            transition: transform var(--transition-fast);
+        "></i>
+        <span class="nav-label" style="
+            font-size: 0.7rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        ">WalinkGO</span>
+        <div style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 0 0 2px 2px;
+            transform: scaleX(0);
+            transition: transform var(--transition-fast);
+        " class="active-indicator"></div>
+    </a>
+    
+    <a href="wp.html" class="nav-item" style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0.375rem 0.5rem;
+        border-radius: var(--radius-md);
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        flex: 1;
+        max-width: 90px;
+        position: relative;
+        overflow: hidden;
+        min-width: 70px;
+    ">
+        <i class="fas fa-quote-left nav-icon" style="
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+            transition: transform var(--transition-fast);
+        "></i>
+        <span class="nav-label" style="
+            font-size: 0.7rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        ">WhatsPOST</span>
+        <div style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 0 0 2px 2px;
+            transform: scaleX(0);
+            transition: transform var(--transition-fast);
+        " class="active-indicator"></div>
+    </a>
+    
+    <a href="sim.html" class="nav-item" style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0.375rem 0.5rem;
+        border-radius: var(--radius-md);
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        flex: 1;
+        max-width: 90px;
+        position: relative;
+        overflow: hidden;
+        min-width: 70px;
+    ">
+        <i class="fas fa-palette nav-icon" style="
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+            transition: transform var(--transition-fast);
+        "></i>
+        <span class="nav-label" style="
+            font-size: 0.7rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        ">WhatsS.I.M</span>
+        <div style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 0 0 2px 2px;
+            transform: scaleX(0);
+            transition: transform var(--transition-fast);
+        " class="active-indicator"></div>
+    </a>
+</nav>
+
+    <!-- JavaScript Files -->
+    <script src="script.js"></script>
+    <!-- Video Player JavaScript -->
+    <script src="video.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {          
+            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            navItems.forEach(item => {
+                const href = item.getAttribute('href');
+                if (href === currentPage) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+            
+            navItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    if (this.href && this.href !== window.location.href) {
+                        e.preventDefault();
+                        
+                        this.classList.add('loading');
+                        
+                        const loader = document.createElement('div');
+                        loader.className = 'nav-loading';
+                        loader.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                        this.appendChild(loader);
+                        
+                        setTimeout(() => {
+                            window.location.href = this.href;
+                        }, 300);
+                    }
+                });
+            });
+            
+            const gateLoaderText = document.querySelector('.loader-text');
+            if (gateLoaderText) {
+                const pageTitles = {
+                    'index.html': 'DP Downloader',
+                    'wa.html': 'WalinkGO',
+                    'wp.html': 'WhatsPOST',
+                    'sim.html': 'WhatsS.I.M'
+                };
+                const pageTitle = pageTitles[currentPage] || 'Premium Tool';
+                gateLoaderText.textContent = `Loading ${pageTitle}...`;
+            }
+        });
+        
+        window.addEventListener('popstate', function() {
+            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            navItems.forEach(item => {
+                const href = item.getAttribute('href');
+                if (href === currentPage) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
